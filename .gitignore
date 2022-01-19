@@ -1,0 +1,7 @@
+/public/js/
+node_modules
+.shadow-cljs/
+.cpcache
+.clj-kondo/.cache/
+.lsp/.cache/
+target

@@ -1,0 +1,37 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.10.3"}}
+
+ :aliases
+ {:app
+  {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.891"}
+                thheller/shadow-cljs {:mvn/version "2.16.5"}
+                binaryage/devtools {:mvn/version "0.9.7"}}}
+
+  :watch
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app"]}
+
+  :test
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}}
+   :main-opts ["-m" "kaocha.runner"]}
+
+  :coverage
+  {:extra-paths ["test"]
+   :extra-deps {cloverage/cloverage {:mvn/version "1.2.2"}}
+   :main-opts ["-m" "cloverage.coverage"
+               "--ns-regex" "wm.core" "--src-ns-path" "src" "--test-ns-path" "test"]}
+
+  :fmt
+  {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}}
+   :main-opts ["-m" "cljfmt.main" "check"]}
+
+  :fix
+  {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}}
+   :main-opts ["-m" "cljfmt.main" "fix"]}
+
+  :nsorg
+  {:extra-deps {nsorg-cli/nsorg-cli {:mvn/version "0.3.1"}}
+   :main-opts ["-m" "nsorg.cli"]}
+
+  :nsorg/fix
+  {:extra-deps {nsorg-cli/nsorg-cli {:mvn/version "0.3.1"}}
+   :main-opts ["-m" "nsorg.cli" "--replace"]}}}

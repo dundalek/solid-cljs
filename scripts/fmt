@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+path="src"
+
+if [ "$1" = "fix" ]
+then
+  clojure -Mnsorg/fix $path
+  clojure -Mfix $path
+else
+  clojure -Mnsorg $path
+  clojure -Mfmt $path
+fi
