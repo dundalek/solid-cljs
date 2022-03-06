@@ -4,4 +4,5 @@ node_modules
 .cpcache
 .clj-kondo/.cache/
 .lsp/.cache/
+.nrepl-port
 target
