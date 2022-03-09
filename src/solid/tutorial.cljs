@@ -1,8 +1,10 @@
 (ns solid.tutorial
   (:require
+   [clojure.string :as str]
    ["solid-js" :refer [createSignal createEffect onCleanup onMount mergeProps
                        Show For Switch Match Dynamic Portal ErrorBoundary]]
    ["solid-js/web" :refer [template render createComponent insert]]
+   ["solid-js/store" :refer [createStore]]
    [solid.core :refer [defui $]]))
 
 (defui CountingComponent []
@@ -36,8 +38,8 @@
         svg ($ :svg {:height "300" :width "400"}
               ($ :defs
                 ($ :linearGradient {:id "gr1" :x1 "0%" :y1 "60%" :x2 "100%" :y2 "0%"}
-                  ($ :stop {:offset "5%" :style "stop-color:rgb(2552553);stop-opacity:1"})
-                  ($ :stop {:offset "100%" :style "stop-color:rgb(25500);stop-opacity:1"})))
+                  ($ :stop {:offset "5%" :style "stop-color:rgb(255,255,3);stop-opacity:1"})
+                  ($ :stop {:offset "100%" :style "stop-color:rgb(255,0,0);stop-opacity:1"})))
               ($ :ellipse {:cx "125" :cy "150" :rx "100" :ry "60" :fill "url(#gr1)"})
               "Sorry but this browser does not support inline SVG.")]
     ($ :<>
@@ -120,21 +122,21 @@
   #_($ :div {:class "app-container"}
       ($ :p "Just some text inside a div that has a restricted size.")
       ($ Portal
-        ($ :div {:class "popup"}
-          ($ :h1 "Popup")
-          ($ :p "Some text you might need for something or other.")))))
+        (fn []
+          ($ :div {:class "popup"}
+            ($ :h1 "Popup")
+            ($ :p "Some text you might need for something or other."))))))
 
 (defui broken [props]
   (throw (js/Error "Oh No"))
   ($ :<> "Never Getting Here"))
 
-;; TODO
 (defui control-flow-error-boundary []
-  #_($ :<>
-      ($ :div "Before")
-      ($ ErrorBoundary {:fallback (fn [err] err)}
-        ($ broken))
-      ($ :div "After")))
+  ($ :<>
+    ($ :div "Before")
+    ($ ErrorBoundary {:fallback (fn [err] err)}
+      (fn [] ($ broken)))
+    ($ :div "After")))
 
 (defui lifecycles-on-mount []
   (let [[photos set-photos] (createSignal #js [])]
@@ -285,6 +287,64 @@
       ($ :button {:onClick #(set-name "Jarod")}
         "Set Name"))))
 
+;; TODO
+(defui props-splitting-props [])
+
+;; TODO
+(defui props-children [])
+
+(defui stores-nested-reactivity [])
+
+(defui stores-create-store []
+  (let [!input (atom nil)
+        !todo-id (atom 0)
+        [store set-store] (createStore #js {:todos #js [#js {:id -1
+                                                             :text "hello"
+                                                             :completed true}]})
+        add-todo (fn [text]
+                   (set-store
+                    "todos"
+                    (fn [todos]
+                      (.concat todos #js {:id (swap! !todo-id inc)
+
+                                          :text text
+                                          :completed false}))))
+        toggle-todo (fn [id]
+                      (js/console.log "toggling" id)
+                      (set-store
+                       "todos"
+                       (fn [todo] (= (.. todo -id) id))
+                       "completed"
+                       #(not %)))]
+    ($ :<>
+      ($ :div
+        ($ :input {:ref #(reset! !input %)})
+        ($ :button
+          {:onClick (fn [_e]
+                      (when-not (str/blank? (.. @!input -value))
+                        (add-todo (.. @!input -value))
+                        (set! (.. @!input -value) "")))}
+          "Add Todo"))
+      ($ For {:each #(.. store -todos)}
+        (fn [todo]
+          (js/console.log "Creating " (.. todo -text))
+          ($ :div
+            ($ :input {:type "checkbox"
+                       :checked #(.. todo -completed)
+                       :onchange #js [toggle-todo (.. todo -id)]})
+            ($ :span {:style (fn [] #js {:text-decoration (if (.. todo -completed) "line-through" "none")})}
+              (.. todo -text))))))))
+
+;; TODO immer-style produce, likely more performant then re-creating the array
+(defui stores-mutation [])
+
+;; TODO - there should not be a gotcha with context
+(defui stores-context [])
+
+;; TODO - could try ratom instead of redux
+;; reconcile function for reactive diffing
+(defui stores-immutable [])
+
 (defui main []
   ($ :<>
     ($ CountingComponent)
@@ -306,5 +366,9 @@
     #_($ bindings-forwarding-refs)
     ($ bindings-spreads)
     ($ bindings-directives)
-    ($ props-default-props)))
-
+    ($ props-default-props)
+    ($ props-splitting-props)
+    ($ props-children)
+    ($ stores-nested-reactivity)
+    ($ stores-create-store)
+    ($ stores-mutation)))
