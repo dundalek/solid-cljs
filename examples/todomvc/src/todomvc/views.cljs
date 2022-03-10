@@ -1,54 +1,56 @@
 (ns todomvc.views
-  (:require [reagent.core  :as reagent]
-            [re-frame.core :refer [subscribe dispatch]]
+  (:require [re-frame.core :refer [subscribe dispatch]]
             [clojure.string :as str]
             [solid.core :refer [defc $ $js]]
-            ["solid-js" :refer [For]]))
+            ["solid-js" :as s]
+            [camel-snake-kebab.core]))
 
-(defc todo-input [{:keys [title on-save on-stop]}]
-  (let [val  (reagent/atom title)
-        stop #(do (reset! val "")
-                  (when on-stop (on-stop)))
-        save #(let [v (-> @val str str/trim)]
-                (on-save v)
-                (stop))]
-    (fn [props]
-      ($ :input
-        #_(merge (dissoc props :on-save :on-stop :title))
-        {:type        "text"
-         :value       @val
-         :auto-focus  true
-         :on-blur     save
-         :on-change   #(reset! val (-> % .-target .-value))
-         :on-key-down #(case (.-which %)
-                         13 (save)
-                         27 (stop)
-                         nil)}))))
+(defc todo-input [{:keys [id class placeholder title on-save on-stop]}]
+  (let [[value set-value] (s/createSignal (title))
+        stop (fn []
+               (set-value "")
+               (when on-stop (on-stop)))
+        save (fn []
+               (on-save (-> (value) str str/trim))
+               (stop))]
+    ($ :input
+      {:id id
+       :class class
+       :type        "text"
+       :placeholder placeholder
+       :value       value
+       :auto-focus  true
+       :on-blur     save
+       :on-input    #(set-value (.. % -target -value))
+       :on-keydown (fn [ev]
+                     (case (.-which ev)
+                       13 (save)
+                       27 (stop)
+                       nil))})))
 
-(defc todo-item
-  []
-  (let [editing (reagent/atom false)]
-    (fn [{:keys [id done title]}]
-      ($ :li {:class (str (when done "completed ")
-                          (when @editing "editing"))}
-        ($ :div.view
-          ($ :input.toggle
-            {:type "checkbox"
-             :checked done
-             :on-change #(dispatch [:toggle-done id])})
-          ($ :label
-            {:on-double-click #(reset! editing true)}
-            title)
-          ($ :button.destroy
-            {:on-click #(dispatch [:delete-todo id])}))
-        (when @editing
+(defc todo-item [{:keys [id done title]}]
+  (let [[editing set-editing] (s/createSignal false)]
+    ($ :li {:class #(str (when (done) "completed ")
+                         (when (editing) "editing"))}
+      ($ :div.view
+        ($ :input.toggle
+          {:type "checkbox"
+           :checked done
+           :on-change #(dispatch [:toggle-done (id)])})
+        ($ :label
+          {:on-dblclick #(set-editing true)}
+          title)
+        ($ :button.destroy
+          {:on-click #(dispatch [:delete-todo (id)])}))
+      ($js s/Show {:when editing}
+        (fn []
           ($ todo-input
             {:class "edit"
              :title title
              :on-save #(if (seq %)
-                         (dispatch [:save id %])
-                         (dispatch [:delete-todo id]))
-             :on-stop #(reset! editing false)}))))))
+                         (dispatch [:save (id) %])
+                         (dispatch [:delete-todo (id)]))
+             :on-stop #(set-editing false)}))))))
 
 (defc task-list
   []
@@ -63,9 +65,9 @@
         {:for "toggle-all"}
         "Mark all as complete")
       ($ :ul#todo-list
-        ($js For {:each (to-array visible-todos)}
-             (fn [todo]
-               ($ todo-item todo)))))))
+        ($js s/For {:each (to-array visible-todos)}
+          (fn [todo]
+            ($ todo-item todo)))))))
 
 (defc footer-controls
   []
@@ -93,7 +95,9 @@
     ($ todo-input
       {:id "new-todo"
        :placeholder "What needs to be done?"
-       :on-save #(when (seq %)
+       ;; TODO: remove after handling missing props in callable props
+       :title ""
+       :on-save #(when-not (str/blank? %)
                    (dispatch [:add-todo %]))})))
 
 (defc todo-app
@@ -101,8 +105,9 @@
   ($ :<>
     ($ :section#todoapp
       ($ task-entry)
-      (when (seq @(subscribe [:todos]))
-        ($ task-list))
+      ($js s/Show {:when (seq @(subscribe [:todos]))}
+        (fn []
+          ($ task-list)))
       ($ footer-controls))
     ($ :footer#info
       ($ :p "Double-click to edit a todo"))))

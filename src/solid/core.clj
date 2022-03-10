@@ -1,4 +1,5 @@
-(ns solid.core)
+(ns solid.core
+  (:require [camel-snake-kebab.core :as csk]))
 
 (defmacro defui1 [& body]
   `(defn ~@body))
@@ -53,7 +54,7 @@
       (cons
        (cons 'js-obj (mapcat
                       (fn [[k v]]
-                        [(if (keyword? k) (name k) k)
+                        [(csk/->camelCaseString k)
                          v])
                       props))
        other)
