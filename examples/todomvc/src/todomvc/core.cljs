@@ -1,19 +1,17 @@
 (ns todomvc.core
-  (:require-macros [secretary.core :refer [defroute]])
+  ; (:require-macros [secretary.core :refer [defroute]])
   (:require [goog.events :as events]
             [reagent.dom]
             [re-frame.core :as rf :refer [dispatch dispatch-sync]]
-            [secretary.core :as secretary]
+            ; [secretary.core :as secretary]
             [todomvc.events] ;; These two are only required to make the compiler
             [todomvc.subs]   ;; load them (see docs/App-Structure.md)
             [todomvc.views])
   (:import [goog History]
            [goog.history EventType]))
 
-
 ;; -- Debugging aids ----------------------------------------------------------
 (enable-console-print!)   ;; so that println writes to `console.log`
-
 
 ;; Put an initial value into app-db.
 ;; The event handler for `:initialise-db` can be found in `events.cljs`
@@ -28,15 +26,14 @@
 ;;   - https://github.com/juxt/bidi
 ;; We don't have a strong opinion.
 ;;
-(defroute "/" [] (dispatch [:set-showing :all]))
-(defroute "/:filter" [filter] (dispatch [:set-showing (keyword filter)]))
-
-(defonce history
-  (doto (History.)
-    (events/listen EventType.NAVIGATE
-                   (fn [^js/goog.History.Event event] (secretary/dispatch! (.-token event))))
-    (.setEnabled true)))
-
+; (defroute "/" [] (dispatch [:set-showing :all]))
+; (defroute "/:filter" [filter] (dispatch [:set-showing (keyword filter)]))
+;
+; (defonce history
+;   (doto (History.)
+;     (events/listen EventType.NAVIGATE
+;                    (fn [^js/goog.History.Event event] (secretary/dispatch! (.-token event))))
+;     (.setEnabled true)))
 
 ;; -- Entry Point -------------------------------------------------------------
 
