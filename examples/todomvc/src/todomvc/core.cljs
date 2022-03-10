@@ -6,7 +6,8 @@
             ; [secretary.core :as secretary]
             [todomvc.events] ;; These two are only required to make the compiler
             [todomvc.subs]   ;; load them (see docs/App-Structure.md)
-            [todomvc.views])
+            [todomvc.views]
+            ["solid-js/web" :as solid-web])
   (:import [goog History]
            [goog.history EventType]))
 
@@ -42,8 +43,11 @@
   ;; Render the UI into the HTML's <div id="app" /> element
   ;; The view function `todomvc.views/todo-app` is the
   ;; root view for the entire UI.
-  (reagent.dom/render [todomvc.views/todo-app]
-                      (.getElementById js/document "app")))
+  #_(reagent.dom/render [todomvc.views/todo-app]
+                        (.getElementById js/document "app"))
+  (let [el (.getElementById js/document "app")]
+    (set! (.-innerText el) "")
+    (solid-web/render todomvc.views/todo-app el)))
 
 (defn ^:dev/after-load clear-cache-and-render!
   []

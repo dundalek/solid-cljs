@@ -68,6 +68,11 @@
     :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
                           {:el el}))))
 
+(defmacro $js [el & body]
+  (cond
+    (symbol? el) `(solid.core/h ~el ~@(with-js-props body))
+    :else (throw (ex-info (str "Expected symbol as element, received: " el)
+                          {:el el}))))
 ;; TODO: needs to be smarter to handle docstrings, annotations, etc.
 (defmacro defc [fn-name params & body]
   (if (seq params)
