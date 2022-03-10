@@ -2,7 +2,7 @@
   (:require
    ["solid-js" :refer [createSignal]]
    ["solid-js/web" :refer [render]]
-   [solid.core :refer [defui defui2 $]]
+   [solid.core :refer [defui defui2 $ $2]]
    [solid.todos :as todos]
    [solid.tutorial :as tutorial]))
 
@@ -21,12 +21,12 @@
   (let [[size set-size] (createSignal 10)]
     ($ :<>
       ($ :button {:onClick #(set-size inc)} "Parent Add")
-      ($ counter {:size 100
-                  :set-size #()
-                  :add-ten #()})
-      ($ counter {:size size
-                  :set-size set-size
-                  :add-ten #(set-size (+ (size) 10))}))))
+      ($2 counter {:size 100
+                   :set-size #()
+                   :add-ten #()})
+      ($2 counter {:size size
+                   :set-size set-size
+                   :add-ten #(set-size (+ (size) 10))}))))
 
 (defui app []
   ($ :<>
