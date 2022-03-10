@@ -1,9 +1,9 @@
 (ns solid.core)
 
-(defmacro defui [& body]
+(defmacro defui1 [& body]
   `(defn ~@body))
 
-(defmacro $ [el & body]
+(defmacro $1 [el & body]
   (let [[props & body] body
         body (cons
               (if (map? props) `(cljs.core/clj->js ~props) props)
@@ -16,7 +16,7 @@
       :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
                             {:el el})))))
 
-(defmacro $2 [el & body]
+(defmacro $ [el & body]
   (let [[props & body] body
         body (cons
               (if (map? props)
@@ -37,9 +37,12 @@
                             {:el el})))))
 
 ;; TODO: needs to be smarter to handle docstrings, annotations, etc.
-(defmacro defui2 [fn-name [props-binding] & body]
-  `(defn ~fn-name [props#]
-     (let [~props-binding (cljs-bean.core/bean
-                           (js/Proxy. props# solid.core/proxy-props-handler))]
+(defmacro defc [fn-name params & body]
+  (if (seq params)
+    `(defn ~fn-name [props#]
+       (let [~(first params) (cljs-bean.core/bean
+                              (js/Proxy. props# solid.core/proxy-props-handler))]
 
+         ~@body))
+    `(defn ~fn-name []
        ~@body)))

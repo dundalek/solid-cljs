@@ -1,7 +1,7 @@
 (ns solid.todos
   (:require ["solid-js" :refer [createEffect For]]
             ["solid-js/store" :refer [createStore]]
-            [solid.core :refer [defui $]]))
+            [solid.core :refer [defui1 $1] :rename {defui1 defui $1 $}]))
 
 (defn createLocalStore
   [initState]

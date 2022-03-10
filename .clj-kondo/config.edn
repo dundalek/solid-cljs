@@ -1,3 +1,3 @@
 {:lint-as
- {solid.core/defui clojure.core/defn
-  solid.core/defui2 clojure.core/defn}}
+ {solid.core/defui1 clojure.core/defn
+  solid.core/defc clojure.core/defn}}
