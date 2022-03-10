@@ -1,4 +1,5 @@
 /public/js/
+/examples/todomvc/resources/public/js/
 node_modules
 .shadow-cljs/
 .cpcache

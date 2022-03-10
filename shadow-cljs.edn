@@ -1,6 +1,7 @@
 {:deps true
 
- :dev-http {8888 "public"}
+ :dev-http {8888 "public"
+            7777 "examples/todomvc/resources/public"}
 
  :builds
  {:app {:target :browser
@@ -8,4 +9,12 @@
         :asset-path "/js"
         :modules {:app {:entries [solid.app]}}
         :devtools {:reload-strategy :full
-                   :preloads [devtools.preload]}}}}
+                   :preloads [devtools.preload]}}
+
+  :todomvc {:target :browser
+            :output-dir "examples/todomvc/resources/public/js"
+            :asset-path "/js"
+            :modules {:client {:entries [todomvc.core]
+                               :init-fn todomvc.core/main}}
+            :devtools {:reload-strategy :full
+                       :preloads [devtools.preload]}}}}

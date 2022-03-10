@@ -69,7 +69,8 @@
         showing       @(subscribe [:showing])
         a-fn          (fn [filter-kw txt]
                         [:a {:class (when (= filter-kw showing) "selected")
-                             :href (str "#/" (name filter-kw))} txt])]
+                             :on-click #(dispatch [:set-showing filter-kw])}
+                         txt])]
     [:footer#footer
      [:span#todo-count
       [:strong active] " " (case active 1 "item" "items") " left"]
