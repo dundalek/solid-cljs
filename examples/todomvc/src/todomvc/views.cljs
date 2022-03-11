@@ -24,7 +24,7 @@
    (use-reaction (rf/subscribe query dynv))))
 
 (defc todo-input [{:keys [id class placeholder title on-save on-stop]}]
-  (let [[value set-value] (s/createSignal (title))
+  (let [[value set-value] (s/createSignal @title)
         stop (fn []
                (set-value "")
                (when on-stop (on-stop)))
@@ -48,26 +48,26 @@
 
 (defc todo-item [{:keys [id done title]}]
   (let [[editing set-editing] (s/createSignal false)]
-    ($ :li {:class #(str (when (done) "completed ")
+    ($ :li {:class #(str (when @done "completed ")
                          (when (editing) "editing"))}
       ($ :div.view
         ($ :input.toggle
           {:type "checkbox"
            :checked done
-           :on-change #(dispatch [:toggle-done (id)])})
+           :on-change #(dispatch [:toggle-done @id])})
         ($ :label
           {:on-dblclick #(set-editing true)}
           title)
         ($ :button.destroy
-          {:on-click #(dispatch [:delete-todo (id)])}))
+          {:on-click #(dispatch [:delete-todo @id])}))
       ($js s/Show {:when editing}
         (fn []
           ($ todo-input
             {:class "edit"
              :title title
              :on-save #(if (seq %)
-                         (dispatch [:save (id) %])
-                         (dispatch [:delete-todo (id)]))
+                         (dispatch [:save @id %])
+                         (dispatch [:delete-todo @id]))
              :on-stop #(set-editing false)}))))))
 
 (defc task-list

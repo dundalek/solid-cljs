@@ -55,7 +55,7 @@
        (cons 'js-obj (mapcat
                       (fn [[k v]]
                         [(csk/->camelCaseString k)
-                         v])
+                         `(solid.core/wrap-rprop ~v)])
                       props))
        other)
       body)))
