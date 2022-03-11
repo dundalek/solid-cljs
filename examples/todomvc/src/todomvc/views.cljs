@@ -1,9 +1,27 @@
 (ns todomvc.views
-  (:require [re-frame.core :refer [subscribe dispatch]]
+  (:require [re-frame.core :as rf :refer [dispatch]]
+            [re-frame.db :refer [app-db]]
             [clojure.string :as str]
             [solid.core :refer [defc $ $js]]
             ["solid-js" :as s]
-            [camel-snake-kebab.core]))
+            [reagent.ratom :as ratom]))
+
+(defn use-reaction [reaction]
+  (let [key (js-obj)
+        initial-value (binding [ratom/*ratom-context* (js-obj)]
+                        @reaction)
+        [sig set-value] (s/createSignal initial-value)]
+    (add-watch reaction key (fn [_key _ref _old-value new-value]
+                              (set-value new-value)))
+    (s/onCleanup (fn []
+                   (remove-watch reaction key)))
+    sig))
+
+(defn subscribe
+  ([query]
+   (use-reaction (rf/subscribe query)))
+  ([query dynv]
+   (use-reaction (rf/subscribe query dynv))))
 
 (defc todo-input [{:keys [id class placeholder title on-save on-stop]}]
   (let [[value set-value] (s/createSignal (title))
@@ -54,8 +72,8 @@
 
 (defc task-list
   []
-  (let [visible-todos @(subscribe [:visible-todos])
-        all-complete? @(subscribe [:all-complete?])]
+  (let [visible-todos (subscribe [:visible-todos])
+        all-complete? (subscribe [:all-complete?])]
     ($ :section#main
       ($ :input#toggle-all
         {:type "checkbox"
@@ -65,26 +83,30 @@
         {:for "toggle-all"}
         "Mark all as complete")
       ($ :ul#todo-list
-        ($js s/For {:each (to-array visible-todos)}
+        ($js s/For {:each #(to-array (visible-todos))}
           (fn [todo]
             ($ todo-item todo)))))))
 
 (defc footer-controls
   []
-  (let [[active done] @(subscribe [:footer-counts])
-        showing       @(subscribe [:showing])
+  (let [;; TODO support reactive desctructuring
+        ;[active done] (subscribe [:footer-counts])
+        footer-counts (subscribe [:footer-counts])
+        active (s/createMemo #(first (footer-counts)))
+        done (s/createMemo #(second (footer-counts)))
+        showing       (subscribe [:showing])
         a-fn          (fn [filter-kw txt]
-                        ($ :a {:class (when (= filter-kw showing) "selected")
+                        ($ :a {:class #(when (= filter-kw (showing)) "selected")
                                :on-click #(dispatch [:set-showing filter-kw])}
                           txt))]
     ($ :footer#footer
       ($ :span#todo-count
-        ($ :strong active) " " (case active 1 "item" "items") " left")
+        ($ :strong active) " " #(case (active) 1 "item" "items") " left")
       ($ :ul#filters
         ($ :li (a-fn :all    "All"))
         ($ :li (a-fn :active "Active"))
         ($ :li (a-fn :done   "Completed")))
-      (when (pos? done)
+      ($js s/Show {:when #(pos? (done))}
         ($ :button#clear-completed {:on-click #(dispatch [:clear-completed])}
           "Clear completed")))))
 
@@ -102,12 +124,13 @@
 
 (defc todo-app
   []
-  ($ :<>
-    ($ :section#todoapp
-      ($ task-entry)
-      ($js s/Show {:when (seq @(subscribe [:todos]))}
-        (fn []
-          ($ task-list)))
-      ($ footer-controls))
-    ($ :footer#info
-      ($ :p "Double-click to edit a todo"))))
+  (let [todos (subscribe [:todos])]
+    ($ :<>
+      ($ :section#todoapp
+        ($ task-entry)
+        ($js s/Show {:when #(seq (todos))}
+          (fn []
+            ($ task-list)))
+        ($ footer-controls))
+      ($ :footer#info
+        ($ :p "Double-click to edit a todo")))))
