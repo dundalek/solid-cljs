@@ -55,7 +55,7 @@
        (cons 'js-obj (mapcat
                       (fn [[k v]]
                         [(csk/->camelCaseString k)
-                         `(solid.core/wrap-rprop ~v)])
+                         `(solid.core/wrap-rbean ~v)])
                       props))
        other)
       body)))
@@ -78,7 +78,7 @@
 (defn defc [fn-name params & body]
   (if (seq params)
     `(defn ~fn-name [props#]
-       (let [~(first params) (solid.core/make-callable-props props#)]
+       (let [~(first params) (solid.core/make-rprops props#)]
          ~@body))
     `(defn ~fn-name []
        ~@body)))
