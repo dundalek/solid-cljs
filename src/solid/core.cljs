@@ -1,7 +1,8 @@
 (ns solid.core
   (:require ["solid-js/h" :as hyperscript]
             [cljs-bean.core]
-            [goog.object :as gobj])
+            [goog.object :as gobj]
+            ["solid-js" :as s])
   (:require-macros [solid.core]))
 
 (deftype RProp [f]
@@ -36,8 +37,12 @@
 (defn make-callable-props [props]
   (reduce-kv (fn [m k x]
                (assoc m k (cond
+                            (instance? RProp x) x
                             (not (fn? x)) (->RProp (fn [] x))
                             (zero? (.-length x)) (->RProp x)
                             :else x)))
              {}
              props))
+
+(def For s/For)
+(def Show s/Show)

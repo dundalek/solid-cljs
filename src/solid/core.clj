@@ -1,84 +1,13 @@
 (ns solid.core
-  (:require [camel-snake-kebab.core :as csk]))
+  (:refer-clojure :exclude [if when for])
+  (:require [solid.impl.core :as core]))
 
-(defmacro defui1 [& body]
-  `(defn ~@body))
+(defmacro defui1 [& body] (apply core/defui1 body))
+(defmacro $1 [& body] (apply core/$1 body))
+(defmacro $ [& body] (apply core/$ body))
+(defmacro $js [& body] (apply core/$js body))
+(defmacro defc [& body] (apply core/defc body))
+(defmacro for [& body] (apply core/flow-for body))
+(defmacro if [& body] (apply core/flow-if body))
+(defmacro when [& body] (apply core/flow-when body))
 
-(defmacro $1 [el & body]
-  (let [[props & body] body
-        body (cons
-              (if (map? props) `(cljs.core/clj->js ~props) props)
-              body)]
-    (cond
-      (= el :<>) `(cljs.core/array ~@body)
-      (string? el) `(solid.core/h ~el ~@body)
-      (keyword? el) `(solid.core/h ~(name el) ~@body)
-      (symbol? el) `(solid.core/h ~el ~@body)
-      :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
-                            {:el el})))))
-
-#_(defmacro $ [el & body]
-    (let [[props & body] body
-          body (cons
-                (if (map? props)
-                  (cons 'js-obj
-                        (mapcat
-                         (fn [[k v]]
-                           [(if (keyword? k) (name k) k)
-                            v])
-                         props))
-                  props)
-                body)]
-      (cond
-        (= el :<>) `(cljs.core/array ~@body)
-        (string? el) `(solid.core/h ~el ~@body)
-        (keyword? el) `(solid.core/h ~(name el) ~@body)
-        (symbol? el) `(solid.core/h ~el ~@body)
-        :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
-                              {:el el})))))
-
-;; TODO: needs to be smarter to handle docstrings, annotations, etc.
-#_(defmacro defc [fn-name params & body]
-    (if (seq params)
-      `(defn ~fn-name [props#]
-         (let [~(first params) (cljs-bean.core/bean
-                                (js/Proxy. props# solid.core/proxy-props-handler))]
-
-           ~@body))
-      `(defn ~fn-name []
-         ~@body)))
-
-(defn- with-js-props [body]
-  (let [[props & other] body]
-    (if (map? props)
-      (cons
-       (cons 'js-obj (mapcat
-                      (fn [[k v]]
-                        [(csk/->camelCaseString k)
-                         `(solid.core/wrap-rprop ~v)])
-                      props))
-       other)
-      body)))
-
-(defmacro $ [el & body]
-  (cond
-    (= el :<>) `(cljs.core/array ~@body)
-    (string? el) `(solid.core/h ~el ~@(with-js-props body))
-    (keyword? el) `(solid.core/h ~(name el) ~@(with-js-props body))
-    (symbol? el) `(solid.core/h ~el ~@body)
-    :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
-                          {:el el}))))
-
-(defmacro $js [el & body]
-  (cond
-    (symbol? el) `(solid.core/h ~el ~@(with-js-props body))
-    :else (throw (ex-info (str "Expected symbol as element, received: " el)
-                          {:el el}))))
-;; TODO: needs to be smarter to handle docstrings, annotations, etc.
-(defmacro defc [fn-name params & body]
-  (if (seq params)
-    `(defn ~fn-name [props#]
-       (let [~(first params) (solid.core/make-callable-props props#)]
-         ~@body))
-    `(defn ~fn-name []
-       ~@body)))

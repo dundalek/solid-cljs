@@ -2,7 +2,7 @@
   (:require [re-frame.core :as rf :refer [dispatch]]
             [re-frame.db :refer [app-db]]
             [clojure.string :as str]
-            [solid.core :refer [defc $ $js]]
+            [solid.core :as sl :refer [defc $ $js]]
             ["solid-js" :as s]
             [reagent.ratom :as ratom]))
 
@@ -60,15 +60,16 @@
           title)
         ($ :button.destroy
           {:on-click #(dispatch [:delete-todo @id])}))
-      ($js s/Show {:when editing}
-        (fn []
-          ($ todo-input
-            {:class "edit"
-             :title title
-             :on-save #(if (seq %)
-                         (dispatch [:save @id %])
-                         (dispatch [:delete-todo @id]))
-             :on-stop #(set-editing false)}))))))
+      (sl/when editing
+        ($ todo-input
+          {:class "edit"
+           :title #(title)
+           :on-save (fn [text]
+                      (js/console.log "on-save" text)
+                      (if (seq text)
+                        (dispatch [:save @id text])
+                        (dispatch [:delete-todo @id])))
+           :on-stop #(set-editing false)})))))
 
 (defc task-list
   []
@@ -83,9 +84,8 @@
         {:for "toggle-all"}
         "Mark all as complete")
       ($ :ul#todo-list
-        ($js s/For {:each #(to-array (visible-todos))}
-          (fn [todo]
-            ($ todo-item todo)))))))
+        (sl/for [todo #(to-array (visible-todos))]
+          ($ todo-item todo))))))
 
 (defc footer-controls
   []
@@ -106,7 +106,7 @@
         ($ :li (a-fn :all    "All"))
         ($ :li (a-fn :active "Active"))
         ($ :li (a-fn :done   "Completed")))
-      ($js s/Show {:when #(pos? (done))}
+      (sl/when #(pos? (done))
         ($ :button#clear-completed {:on-click #(dispatch [:clear-completed])}
           "Clear completed")))))
 
@@ -128,9 +128,8 @@
     ($ :<>
       ($ :section#todoapp
         ($ task-entry)
-        ($js s/Show {:when #(seq (todos))}
-          (fn []
-            ($ task-list)))
+        (sl/when #(seq (todos))
+          ($ task-list))
         ($ footer-controls))
       ($ :footer#info
         ($ :p "Double-click to edit a todo")))))
