@@ -117,8 +117,6 @@
     ($ todo-input
       {:id "new-todo"
        :placeholder "What needs to be done?"
-       ;; TODO: remove after handling missing props in callable props
-       :title ""
        :on-save #(when-not (str/blank? %)
                    (dispatch [:add-todo %]))})))
 

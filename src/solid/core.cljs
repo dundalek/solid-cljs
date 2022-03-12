@@ -25,24 +25,27 @@
        (map wrap-rprop)
        (apply hyperscript)))
 
-(def proxy-props-handler
-  #js {:get (fn [target prop]
-              (fn [& args]
-                (let [x (gobj/get target prop)]
-                  (if (fn? x)
-                    (apply x args)
-                    x))))})
+#_(def proxy-props-handler
+    #js {:get (fn [target prop]
+                (fn [& args]
+                  (let [x (gobj/get target prop)]
+                    (if (fn? x)
+                      (apply x args)
+                      x))))})
 
-;; TODO make this lazy or via protocol
+(deftype RBean [m]
+  ILookup
+  (-lookup [_ k]
+    (let [x (get m k)]
+      (cond
+        (instance? RProp x) x
+        (not (fn? x)) (->RProp (fn [] x))
+        (zero? (.-length x)) (->RProp x)
+        :else x)))
+  #_(-lookup [_ k not-found]))
+
 (defn make-callable-props [props]
-  (reduce-kv (fn [m k x]
-               (assoc m k (cond
-                            (instance? RProp x) x
-                            (not (fn? x)) (->RProp (fn [] x))
-                            (zero? (.-length x)) (->RProp x)
-                            :else x)))
-             {}
-             props))
+  (->RBean props))
 
 (def For s/For)
 (def Show s/Show)
