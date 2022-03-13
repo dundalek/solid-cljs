@@ -2,7 +2,8 @@
   (:require ["solid-js/h" :as hyperscript]
             [cljs-bean.core]
             [goog.object :as gobj]
-            ["solid-js" :as s])
+            ["solid-js" :as s]
+            [solid.impl.array :as array])
   (:require-macros [solid.core]))
 
 #_(def proxy-props-handler
@@ -64,3 +65,47 @@
 
 (def For s/For)
 (def Show s/Show)
+
+(def mapArray (.-mapArray ^js (array/solidInitArray s)))
+; (def mapArray (.-mapArray ^js (js/window.solidInitArray s)))
+
+(defn dispose [disposers]
+  (doseq [d disposers]
+    (d)))
+
+(defn map-array [coll map-fn fallback]
+  ; (solid/mapArray coll map-fn fallback)
+  (mapArray coll map-fn fallback)
+  #_(array/mapArray coll map-fn fallback)
+  #_(let [;!items (atom #js []) ; probably needed for efficient reconciliation
+          !mapped (atom #js [])
+          !disposers (atom #js [])]
+          ;;mapper (fn [disposers])]
+      (solid/onCleanup #(dispose @!disposers))
+      (fn []
+        (let [new-items (or (coll) #js [])]
+
+          (solid/untrack
+            (fn []
+              (dispose @!disposers)
+              (reset! !disposers #js [])
+              ; (reset! !mapped #js [])
+              (reset! !mapped (js/Array.))
+              (.forEach new-items
+                (fn [item j]
+                  ;; mapper
+                  (aset @!mapped j
+                        (solid/createRoot
+                          (fn [dispose]
+                            (aset @!disposers j dispose)
+                            (map-fn item))))))
+              @!mapped))))))
+
+(defn reactive-for [items body]
+  #_($js solid/For {:each items}
+      body)
+  (let [fallback js/undefined]
+    (s/createMemo
+      (fn []
+        (map-array items body fallback)))))
+

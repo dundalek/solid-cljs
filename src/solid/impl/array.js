@@ -1,7 +1,8 @@
-// goog.provide("solid.impl.array");
+goog.provide("solid.impl.array");
 
 // TODO: figure out how to do imports in goog modules
-window.solidInitArray = function init({ onCleanup, createRoot, untrack, createSignal, Owner, Accessor, Setter }) {
+//window.solidInitArray = function init({ onCleanup, createRoot, untrack, createSignal, Owner, Accessor, Setter }) {
+solid.impl.array.solidInitArray = function init({ onCleanup, createRoot, untrack, createSignal, Owner, Accessor, Setter }) {
 
 const FALLBACK = Symbol("fallback");
 function dispose(d) {
