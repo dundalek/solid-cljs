@@ -5,6 +5,7 @@
    [solid.core :as s :refer [defc $ $js]]
    [solid.todos :as todos]
    [solid.tutorial :as tutorial]))
+   ; [solid.impl.array :as array]))
 
 (defc counter [{:keys [size set-size add-ten]}]
   ($ :div
@@ -59,35 +60,39 @@
         ($ :div c)
         ($ :div #(str (c) " " (js/Date.now)))))))
 
+(def mapArray (.-mapArray ^js (js/window.solidInitArray solid)))
+
 (defn dispose [disposers]
   (doseq [d disposers]
     (d)))
 
 (defn map-array [coll map-fn fallback]
-  #_(solid/mapArray items body fallback)
-  (let [;!items (atom #js []) ; probably needed for efficient reconciliation
-        !mapped (atom #js [])
-        !disposers (atom #js [])]
-        ;;mapper (fn [disposers])]
-    (solid/onCleanup #(dispose @!disposers))
-    (fn []
-      (let [new-items (or (coll) #js [])]
+  ; (solid/mapArray coll map-fn fallback)
+  (mapArray coll map-fn fallback)
+  #_(array/mapArray coll map-fn fallback)
+  #_(let [;!items (atom #js []) ; probably needed for efficient reconciliation
+          !mapped (atom #js [])
+          !disposers (atom #js [])]
+          ;;mapper (fn [disposers])]
+      (solid/onCleanup #(dispose @!disposers))
+      (fn []
+        (let [new-items (or (coll) #js [])]
 
-        (solid/untrack
-          (fn []
-            (dispose @!disposers)
-            (reset! !disposers #js [])
-            ; (reset! !mapped #js [])
-            (reset! !mapped (js/Array.))
-            (.forEach new-items
-              (fn [item j]
-                ;; mapper
-                (aset @!mapped j
-                      (solid/createRoot
-                        (fn [dispose]
-                          (aset @!disposers j dispose)
-                          (map-fn item))))))
-            @!mapped))))))
+          (solid/untrack
+            (fn []
+              (dispose @!disposers)
+              (reset! !disposers #js [])
+              ; (reset! !mapped #js [])
+              (reset! !mapped (js/Array.))
+              (.forEach new-items
+                (fn [item j]
+                  ;; mapper
+                  (aset @!mapped j
+                        (solid/createRoot
+                          (fn [dispose]
+                            (aset @!disposers j dispose)
+                            (map-fn item))))))
+              @!mapped))))))
 
 (defn my-for [items body]
   #_($js solid/For {:each items}
@@ -99,30 +104,53 @@
 
 (defc colls []
   (let [[items set-items] (createSignal
-                            [{:id 1 :label "A"}
-                             {:id 2 :label "B"}
-                             {:id 3 :label "C"}])]
+                            (->> (range 10)
+                                 (mapv #(str "x" %))))]
+
     ($ :div
       ($ :button {:on-click (fn []
-                              (set-items (update-in (items) [1 :label] #(str % " !!"))))}
+                              (set-items (update-in (items) [1] #(str % " !!"))))}
         "Update")
       ($ :button {:on-click (fn []
                               (let [items (items)]
                                 (set-items (-> items
-                                               (assoc 0 (get items 2))
-                                               (assoc 2 (get items 0))))))}
+                                               (assoc 1 (get items 8))
+                                               (assoc 8 (get items 1))))))}
         "Swap")
-      (my-for #(into-array (items))
+      (my-for (fn[]
+                (into-array (items)))
         (fn [item]
           ($ :div
-             #(:id item)
-             " "
-             #(:label item))))
-      #_(s/for [item #(into-array (items))]
-          ($ :div
-             #(:id item)
-             " "
-             #(:label item))))))
+             ($ :div
+               item)))))))
+
+
+#_(defc colls []
+    (let [[items set-items] (createSignal
+                              [{:id 1 :label "A"}
+                               {:id 2 :label "B"}
+                               {:id 3 :label "C"}])]
+      ($ :div
+        ($ :button {:on-click (fn []
+                                (set-items (update-in (items) [1 :label] #(str % " !!"))))}
+          "Update")
+        ($ :button {:on-click (fn []
+                                (let [items (items)]
+                                  (set-items (-> items
+                                                 (assoc 0 (get items 2))
+                                                 (assoc 2 (get items 0))))))}
+          "Swap")
+        (my-for #(into-array (items))
+          (fn [item]
+            ($ :div
+               #(:id item)
+               " "
+               #(:label item))))
+        #_(s/for [item #(into-array (items))]
+            ($ :div
+               #(:id item)
+               " "
+               #(:label item))))))
 
 (defc app []
   ($ :<>
