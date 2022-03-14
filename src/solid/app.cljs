@@ -59,13 +59,14 @@
         ($ :div c)
         ($ :div #(str (c) " " (js/Date.now)))))))
 
+(defn build-data []
+              (->> (range 10)
+                   (mapv (fn [id]
+                           {:id id
+                            :label (str "x" id)}))))
 
 (defc colls []
-  (let [[items set-items] (createSignal
-                            (->> (range 10)
-                                 (mapv (fn [id]
-                                         {:id id
-                                          :label (str "x" id)}))))]
+  (let [[items set-items] (createSignal (build-data))]
     ($ :div
       ($ :button {:on-click (fn []
                               (set-items (update-in (items) [1 :label] #(str % " !!"))))}
@@ -76,6 +77,8 @@
                                                (assoc 1 (get items 8))
                                                (assoc 8 (get items 1))))))}
         "Swap")
+      ($ :button {:on-click #(set-items (build-data))}
+        "Replace")
       (s/reactive-for (fn[]
                         (into-array (items)))
         (fn [item]
@@ -89,17 +92,22 @@
                ($ :div
                  ($ :span id)
                  " "
-                 ($ :span label)))))
-        #_(s/for [item #(into-array (items))]
-            ($ :div
-               #(:id item)
-               " "
-               #(:label item)))))))
+                 ($ :span label))))))
+      (s/for [item #(into-array (items))]
+        (let [id (:id item)
+              label (:label item)]
+           ($ :div
+             ($ :span id)
+             " "
+             ($ :span label)))))))
 
 
 (defc app []
   ($ :<>
+     ($ :span {:aria-hidden "true"}
+        "hello")
     ($ colls)))
+
     ; ($ nested)))
     ; ($ demo)
     ; ($ todos/main)

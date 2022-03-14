@@ -91,6 +91,8 @@ function mapArray(list, mapFn, options = {}) {
           newIndices.set(item, j);
         }
 
+        const reuseNodes = !(start === 0 && end === newLen - 1);
+
         // 1) step through all old items and see if they can be found in the new set; if so, save them in a temp array and mark them moved; if not, exit them
         for (i = start; i <= end; i++) {
           item = items[i];
@@ -102,7 +104,7 @@ function mapArray(list, mapFn, options = {}) {
             indexes && (tempIndexes[j] = indexes[i]);
             j = newIndicesNext[j];
             newIndices.set(item, j);
-          } else if (i < len) {
+          } else if (reuseNodes && i < len) {
           } else disposers[i]();
         }
 
@@ -116,7 +118,7 @@ function mapArray(list, mapFn, options = {}) {
               indexes[j] = tempIndexes[j];
               indexes[j](j);
             }
-          } else if (j < len) {
+          } else if (reuseNodes && j < len) {
             setters[j](newItems[j]);
           } else mapped[j] = createRoot(mapper);
         }

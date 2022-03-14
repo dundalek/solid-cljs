@@ -1,5 +1,6 @@
 (ns solid.impl.core
-  (:require [camel-snake-kebab.core :as csk]))
+  (:require [camel-snake-kebab.core :as csk]
+            [clojure.string :as str]))
 
 (defn defui1 [& body]
   `(defn ~@body))
@@ -54,8 +55,14 @@
       (cons
        (cons 'js-obj (mapcat
                       (fn [[k v]]
-                        [(csk/->camelCaseString k)
-                         `(solid.core/wrap-rbean ~v)])
+                        (let [k (if (keyword k) (name k) (str k))]
+                          [#_(csk/->camelCaseString k)
+                           (if (str/starts-with? "on-" k)
+                             (csk/->camelCaseString k)
+                             ;; keep attributes like aria-hidden
+                             k)
+                           v
+                           `(solid.core/wrap-rbean ~v)]))
                       props))
        other)
       body)))
@@ -77,6 +84,8 @@
 ;; TODO: needs to be smarter to handle docstrings, annotations, etc.
 (defn defc [fn-name params & body]
   (if (seq params)
+    #_`(defn ~fn-name params
+           ~@body)
     `(defn ~fn-name [props#]
        (let [~(first params) (solid.core/make-rprops props#)]
          ~@body))
