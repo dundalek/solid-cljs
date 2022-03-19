@@ -1,8 +1,11 @@
 (ns solid.compiler-test
-  (:require [solid.compiler :refer [$]]
-            [clojure.test :refer [deftest are]]))
+  (:require [solid.compiler :as compiler :refer [compile-static] :rename {compile-static $}]
+            [clojure.test :refer [deftest are is]]
+            [solid.web]
+            ["solid-js" :as sj]
+            [clojure.string :as str]))
 
-(deftest compile
+(deftest compile-static-test
   (are [expr expected] (= expected expr)
     ($ :span "Hello ")
     "<span>Hello </span>"
@@ -55,3 +58,30 @@
     ; ($ c {} expr)
     ;
     ; ($ :<> expr)
+
+(defn- outer-html [el]
+  (-> el
+      .-outerHTML
+      ;; striping placeholder comment nodes, find more rebust way
+      (str/replace "<!---->" "")))
+
+(deftest compile-template-test
+  (let [[name _] (sj/createSignal "John")
+        [greeting _] (sj/createSignal "Hello")]
+    (is (= "<span>Hello John</span>"
+           (.-outerHTML (compiler/compile-template :span "Hello " name))))
+
+    (is (= "<span>Hello John</span>"
+           (.-outerHTML (compiler/compile-template :span greeting " John"))))
+
+    (are [expr expected] (= expected (outer-html expr))
+      (compiler/compile-template :span greeting " " name)
+      "<span>Hello John</span>"
+
+      (compiler/compile-template :span " " greeting " " name " ")
+      "<span> Hello John </span>"
+
+      #_($ :span " " greeting "" name " ")
+      (compiler/compile-template :span " " greeting name " ")
+      "<span> HelloJohn </span>")))
+
