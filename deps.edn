@@ -13,7 +13,11 @@
    :paths ["src" "examples/todomvc/src"]}
 
   :watch
-  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app" "todomvc"]}
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app" "todomvc" "test"]}
+
+  :watch-test
+  {:extra-paths ["test"]
+   :main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app" "test"]}
 
   :test
   {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}}

@@ -1,7 +1,8 @@
 {:deps true
 
  :dev-http {8888 "public"
-            7777 "examples/todomvc/resources/public"}
+            7777 "examples/todomvc/resources/public"
+            9999 "target/test"}
 
  :builds
  {:app {:target :browser
@@ -10,6 +11,9 @@
         :modules {:app {:entries [solid.app]}}
         :devtools {:reload-strategy :full
                    :preloads [devtools.preload]}}
+
+  :test {:target :browser-test
+         :test-dir "target/test"}
 
   :todomvc {:target :browser
             :output-dir "examples/todomvc/resources/public/js"
