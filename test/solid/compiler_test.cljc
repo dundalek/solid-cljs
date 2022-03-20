@@ -4,7 +4,8 @@
             [solid.web]
             ["solid-js" :as sj]
             [clojure.string :as str]
-            [goog.object]))
+            [goog.object]
+            [solid.core :refer [defc]]))
 
 (deftest compile-static-test
   (are [expr expected] (= expected expr)
@@ -120,7 +121,8 @@
     ;                   :width "10px"}})
     ; "<span style=\"background-color:blue;width:10px\"></span>"))
 
-
+#_(macroexpand '(solid.core/defc counter []
+                  (solid.compiler/compile-template :div "hello")))
 
 
 

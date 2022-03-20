@@ -1,6 +1,8 @@
 (ns solid.impl.core
   (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [solid.compiler :as compiler]
+            [clojure.walk :as walk]))
 
 (defn defui1 [& body]
   `(defn ~@body))
@@ -83,14 +85,21 @@
                           {:el el}))))
 ;; TODO: needs to be smarter to handle docstrings, annotations, etc.
 (defn defc [fn-name params & body]
-  (if (seq params)
-    #_`(defn ~fn-name params
-         ~@body)
-    `(defn ~fn-name [props#]
-       (let [~(first params) (solid.core/make-rprops props#)]
-         ~@body))
-    `(defn ~fn-name []
-       ~@body)))
+  (let [!templates (atom {})
+        component (binding [compiler/*templates* !templates]
+                    (walk/macroexpand-all
+                     (if (seq params)
+                       #_`(defn ~fn-name params
+                            ~@body)
+                       `(defn ~fn-name [props#]
+                          (let [~(first params) (solid.core/make-rprops props#)]
+                            ~@body))
+                       `(defn ~fn-name []
+                          ~@body))))]
+    `(do
+       ~@(for [[tmpl-sym tmpl] @!templates]
+           (list 'def tmpl-sym tmpl))
+       ~component)))
 
 (defn flow-for [[item items fallback-kw fallback] & body]
   `(solid.core/$js solid.core/For (cljs.core/js-obj "each" ~items

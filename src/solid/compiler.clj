@@ -1,6 +1,8 @@
 (ns solid.compiler
   (:require [clojure.string :as str]))
 
+(def ^:dynamic *templates* nil)
+
 (defn escape [s]
   ;; TODO use proper escaping, see dom-expressions/server.js escape
   (str/replace s "<" "&lt;"))
@@ -105,23 +107,35 @@
                                [(first child-symbols)
                                 [(first child-symbols) `(.-firstChild ~el-sym)]]
                                (rest child-symbols))))
-            bindings (into [tmpl-sym `(solid.web/template ~(compile-tag el static-props (compile-children children)))
-                            el-sym `(.cloneNode ~tmpl-sym true)]
-                           child-bindings)
+            tmpl-expr `(solid.web/template ~(compile-tag el static-props (compile-children children)))
+            bindings (into (if-not *templates*
+                             [tmpl-sym tmpl-expr]
+                             [])
+                           (concat
+                            [el-sym `(.cloneNode ~tmpl-sym true)]
+                            child-bindings))
             ops (->> (map list children child-symbols)
                      (keep (fn [[expr sym]]
                              (when-not (primitive? expr)
                                `(solid.web/insert ~el-sym ~expr ~sym)))))]
+        (when *templates*
+          (swap! *templates* assoc tmpl-sym tmpl-expr))
         (list `(fn []
                  (let ~bindings
                    ~@prop-ops
                    ~@ops
                    ~el-sym))))))
 
+  #_(macroexpand '(solid.core/defc counter []
+                    (solid.compiler/compile-template :div "hello"
+                                                     (solid.compiler/compile-template :span "world"))))
+
+  #_(macroexpand '(solid.compiler/compile-template :div "hello"
+                                                   (solid.compiler/compile-template :span "world")))
   ; (macroexpand '(compile-template :span {:class cls}))
 
-  (macroexpand '(compile-template :button {:onClick #(set-value inc)}
-                                  "Value: " value))
+  #_(macroexpand '(compile-template :button {:onClick #(set-value inc)}
+                                    "Value: " value))
 
   #_(macroexpand-1 '(compile-template counter {:a 1 :b 2}))
   #_(macroexpand-1 '(compile-template :div
