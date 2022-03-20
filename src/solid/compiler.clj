@@ -98,15 +98,18 @@
                        body)
             child-symbols (mapv (fn [_] (gensym "el")) children)
             child-bindings (when (seq children)
-                             (second
-                              (reduce
-                               (fn [[sibling-sym bindings] sym]
-                                 [sym (-> bindings
-                                          (conj sym)
-                                          (conj `(some-> ~sibling-sym .-nextSibling)))])
-                               [(first child-symbols)
-                                [(first child-symbols) `(.-firstChild ~el-sym)]]
-                               (rest child-symbols))))
+                             (-> (second
+                                  (reduce
+                                   (fn [[sibling-sym bindings] sym]
+                                     [sym (-> bindings
+                                              (conj sym)
+                                              (conj `(.-nextSibling ~sibling-sym)))])
+                                   [(first child-symbols)
+                                    [(first child-symbols) `(.-firstChild ~el-sym)]]
+                                   (rest child-symbols)))
+                                 ;; remove last binding because it will be null anyway and insert takes null for appending
+                                 (pop)
+                                 (conj nil)))
             tmpl-expr `(solid.web/template ~(compile-tag el static-props (compile-children children)))
             bindings (into (if-not *templates*
                              [tmpl-sym tmpl-expr]
@@ -126,9 +129,9 @@
                    ~@ops
                    ~el-sym))))))
 
-  #_(macroexpand '(solid.core/defc counter []
-                    (solid.compiler/compile-template :div "hello"
-                                                     (solid.compiler/compile-template :span "world"))))
+  (macroexpand '(solid.core/defc counter []
+                  (solid.compiler/compile-template :div "hello"
+                                                   (solid.compiler/compile-template :span "world"))))
 
   #_(macroexpand '(solid.compiler/compile-template :div "hello"
                                                    (solid.compiler/compile-template :span "world")))
