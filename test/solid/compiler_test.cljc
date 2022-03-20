@@ -1,5 +1,5 @@
 (ns solid.compiler-test
-  (:require [solid.compiler :as compiler :refer [compile-static] :rename {compile-static $}]
+  (:require [solid.compiler :as compiler :refer [compile-static compile-template] :rename {compile-static $s compile-template $}]
             [clojure.test :refer [deftest are is]]
             [solid.web]
             ["solid-js" :as sj]
@@ -7,57 +7,57 @@
 
 (deftest compile-static-test
   (are [expr expected] (= expected expr)
-    ($ :span "Hello ")
+    ($s :span "Hello ")
     "<span>Hello </span>"
 
-    ($ :span " John")
+    ($s :span " John")
     "<span> John</span>"
 
-    ($ :span "Hello   John") ;; unlike solid/JSX we could preserve whitespace in strings
+    ($s :span "Hello   John") ;; unlike solid/JSX we could preserve whitespace in strings
     "<span>Hello   John</span>"
 
-    ($ :span "Hello " name)
+    ($s :span "Hello " name)
     "<span>Hello </span>"
 
-    ($ :span greeting " John")
+    ($s :span greeting " John")
     "<span> John</span>"
 
-    ($ :span greeting " " name)
+    ($s :span greeting " " name)
     "<span> </span>"
 
-    ($ :span " " greeting " " name " ")
+    ($s :span " " greeting " " name " ")
     "<span> <!> <!> </span>"
 
-    #_($ :span " " greeting "" name " ")
-    ($ :span " " greeting name " ")
+    #_($s :span " " greeting "" name " ")
+    ($s :span " " greeting name " ")
     "<span> <!> </span>"
 
-    ($ :span "&nbsp;&lt;Hi&gt;&nbsp;")
+    ($s :span "&nbsp;&lt;Hi&gt;&nbsp;")
     "<span>&nbsp;&lt;Hi&gt;&nbsp;</span>"
 
-    ; ($ c "&nbsp;&lt;Hi&gt;&nbsp;")
-    ; ($ :<> "&nbsp;&lt;Hi&gt;&nbsp;")
-    ($ :span "Hi" "<script>alert();</script>")
+    ; ($s c "&nbsp;&lt;Hi&gt;&nbsp;")
+    ; ($s :<> "&nbsp;&lt;Hi&gt;&nbsp;")
+    ($s :span "Hi" "<script>alert();</script>")
     "<span>Hi&lt;script>alert();&lt;/script></span>"
 
     (let [value "World"]
-      ($ :span "Hello " (str value "!")))
+      ($s :span "Hello " (str value "!")))
     "<span>Hello World!</span>"
 
     (let [number (+ 4 5)]
-      ($ :span "4 + 5 = " number))
+      ($s :span "4 + 5 = " number))
     "<span>4 + 5 = 9</span>"
 
-    ($ :div s "\n" "d")
+    ($s :div s "\n" "d")
     "<div>\nd</div>"
 
-    ($ :div expr)
+    ($s :div expr)
     "<div></div>"))
 
-    ; ($ c expr)
-    ; ($ c {} expr)
+    ; ($s c expr)
+    ; ($s c {} expr)
     ;
-    ; ($ :<> expr)
+    ; ($s :<> expr)
 
 (defn- outer-html [el]
   (-> el
@@ -69,19 +69,30 @@
   (let [[name _] (sj/createSignal "John")
         [greeting _] (sj/createSignal "Hello")]
     (is (= "<span>Hello John</span>"
-           (.-outerHTML (compiler/compile-template :span "Hello " name))))
+           (.-outerHTML ($ :span "Hello " name))))
 
     (is (= "<span>Hello John</span>"
-           (.-outerHTML (compiler/compile-template :span greeting " John"))))
+           (.-outerHTML ($ :span greeting " John"))))
 
     (are [expr expected] (= expected (outer-html expr))
-      (compiler/compile-template :span greeting " " name)
+      ($ :span greeting " " name)
       "<span>Hello John</span>"
 
-      (compiler/compile-template :span " " greeting " " name " ")
+      ($ :span " " greeting " " name " ")
       "<span> Hello John </span>"
 
-      #_($ :span " " greeting "" name " ")
-      (compiler/compile-template :span " " greeting name " ")
-      "<span> HelloJohn </span>")))
+      #_($s :span " " greeting "" name " ")
+      ($ :span " " greeting name " ")
+      "<span> HelloJohn </span>"
 
+      ($ :div
+        ($ :span "aaa")
+        " "
+        ($ :span "bbb"))
+      "<div><span>aaa</span> <span>bbb</span></div>"
+
+      ($ :div
+        ($ :span greeting)
+        " "
+        ($ :span name))
+      "<div><span>Hello</span> <span>John</span></div>")))
