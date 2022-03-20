@@ -2,9 +2,11 @@
   (:require
    ["solid-js" :as solid :refer [createSignal]]
    ["solid-js/web" :refer [render]]
-   [solid.core :as s :refer [defc $ $js]]
+   [solid.core :as s :refer [defc #_$ $js]]
    [solid.todos :as todos]
-   [solid.tutorial :as tutorial]))
+   [solid.tutorial :as tutorial]
+   [solid.compiler :refer [compile-template] :rename {compile-template $}]
+   [solid.web]))
 
 (defc counter [{:keys [size set-size add-ten]}]
   ($ :div
@@ -60,10 +62,10 @@
         ($ :div #(str (c) " " (js/Date.now)))))))
 
 (defn build-data []
-              (->> (range 10)
-                   (mapv (fn [id]
-                           {:id id
-                            :label (str "x" id)}))))
+  (->> (range 10)
+       (mapv (fn [id]
+               {:id id
+                :label (str "x" id)}))))
 
 (defc colls []
   (let [[items set-items] (createSignal (build-data))]
@@ -79,39 +81,45 @@
         "Swap")
       ($ :button {:on-click #(set-items (build-data))}
         "Replace")
-      (s/reactive-for (fn[]
+      (s/reactive-for (fn []
                         (into-array (items)))
-        (fn [item]
-          (let [id (solid/createMemo #(:id (item)))
-                label (solid/createMemo #(:label (item)))]
-            ($ :div {:on-click (fn []
-                                 (let [item (item)]
-                                   (set-items
-                                      (into [] (remove #(identical? item %))
-                                            (items)))))}
-               ($ :div
-                 ($ :span id)
-                 " "
-                 ($ :span label))))))
+                      (fn [item]
+                        (let [id (solid/createMemo #(:id (item)))
+                              label (solid/createMemo #(:label (item)))]
+                          ($ :div {:on-click (fn []
+                                               (let [item (item)]
+                                                 (set-items
+                                                  (into [] (remove #(identical? item %))
+                                                        (items)))))}
+                            ($ :div
+                              ($ :span id)
+                              " "
+                              ($ :span label))))))
       (s/for [item #(into-array (items))]
         (let [id (:id item)
               label (:label item)]
-           ($ :div
-             ($ :span id)
-             " "
-             ($ :span label)))))))
+          ($ :div
+            ($ :span id)
+            " "
+            ($ :span label)))))))
 
+(defc simple []
+  (let [[value set-value] (solid/createSignal 0)]
+    ($ :button {:onClick #(set-value inc)}
+      "Value: " value)))
 
 (defc app []
   ($ :<>
-     ($ :span {:aria-hidden "true"}
-        "hello")
-    ($ colls)))
+    ($ simple)
 
-    ; ($ nested)))
-    ; ($ demo)
-    ; ($ todos/main)
-    ; ($ tutorial/main)))
+    #_($ :span {:aria-hidden "true"}
+        "hello")
+    #_($ colls)
+
+     ; ($ nested)))
+     ; ($ demo)
+    #_($ todos/main)))
+     ; ($ tutorial/main)))
 
 (defn ^:dev/after-load start []
   (let [el (.getElementById js/document "app")]

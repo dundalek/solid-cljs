@@ -61,7 +61,7 @@
                              (csk/->camelCaseString k)
                              ;; keep attributes like aria-hidden
                              k)
-                           v
+                           ; v
                            `(solid.core/wrap-rbean ~v)]))
                       props))
        other)
@@ -85,7 +85,7 @@
 (defn defc [fn-name params & body]
   (if (seq params)
     #_`(defn ~fn-name params
-           ~@body)
+         ~@body)
     `(defn ~fn-name [props#]
        (let [~(first params) (solid.core/make-rprops props#)]
          ~@body))

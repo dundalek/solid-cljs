@@ -3,7 +3,8 @@
             [clojure.test :refer [deftest are is]]
             [solid.web]
             ["solid-js" :as sj]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [goog.object]))
 
 (deftest compile-static-test
   (are [expr expected] (= expected expr)
@@ -96,3 +97,31 @@
         " "
         ($ :span name))
       "<div><span>Hello</span> <span>John</span></div>")))
+
+(deftest compile-attributes-test
+  (are [expr expected] (= expected (outer-html expr))
+
+    ($ :span {:class "abc"})
+    "<span class=\"abc\"></span>"
+
+    (let [cls "xyz"]
+      ($ :span {:class cls}))
+    "<span class=\"xyz\"></span>"
+
+    (let [cls (constantly "abc")]
+      ($ :span {:class (cls)}))
+    "<span class=\"abc\"></span>"))
+
+    ; ($ :span {:class-list {:abc true
+    ;                        :xyz false}})
+    ; "<span class=\"abc\"></span>"
+    ;
+    ; ($ :span {:style {:background-color "blue"
+    ;                   :width "10px"}})
+    ; "<span style=\"background-color:blue;width:10px\"></span>"))
+
+
+
+
+
+
