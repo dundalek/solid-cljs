@@ -83,11 +83,16 @@
     (symbol? el) `(solid.core/h ~el ~@(with-js-props body))
     :else (throw (ex-info (str "Expected symbol as element, received: " el)
                           {:el el}))))
+
+(defn compile-all [form]
+  (walk/prewalk (fn [x] (if (compiler/compilable-template? x) (compiler/compile-template* x) x))
+                form))
+
 ;; TODO: needs to be smarter to handle docstrings, annotations, etc.
 (defn defc [fn-name params & body]
-  (let [!templates (atom {})
+  (let [!templates (atom {#_#_(gensym "my tmpl") "hello"})
         component (binding [compiler/*templates* !templates]
-                    (walk/macroexpand-all
+                    (compile-all
                      (if (seq params)
                        #_`(defn ~fn-name params
                             ~@body)

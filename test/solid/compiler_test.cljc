@@ -31,8 +31,8 @@
     "<span> <!> <!> </span>"
 
     #_($s :span " " greeting "" name " ")
-    ($s :span " " greeting name " ")
-    "<span> <!> </span>"
+    ; ($s :span " " greeting name " ")
+    ; "<span> <!> </span>"
 
     ($s :span "&nbsp;&lt;Hi&gt;&nbsp;")
     "<span>&nbsp;&lt;Hi&gt;&nbsp;</span>"
@@ -42,13 +42,13 @@
     ($s :span "Hi" "<script>alert();</script>")
     "<span>Hi&lt;script>alert();&lt;/script></span>"
 
-    (let [value "World"]
-      ($s :span "Hello " (str value "!")))
-    "<span>Hello World!</span>"
+    ; (let [value "World"]
+    ;   ($s :span "Hello " (str value "!")))
+    ; "<span>Hello World!</span>"
 
-    (let [number (+ 4 5)]
-      ($s :span "4 + 5 = " number))
-    "<span>4 + 5 = 9</span>"
+    ; (let [number (+ 4 5)]
+    ;   ($s :span "4 + 5 = " number))
+    ; "<span>4 + 5 = 9</span>"
 
     ($s :div s "\n" "d")
     "<div>\nd</div>"
@@ -71,10 +71,10 @@
   (let [[name _] (sj/createSignal "John")
         [greeting _] (sj/createSignal "Hello")]
     (is (= "<span>Hello John</span>"
-           (.-outerHTML ($ :span "Hello " name))))
+           (outer-html ($ :span "Hello " name))))
 
     (is (= "<span>Hello John</span>"
-           (.-outerHTML ($ :span greeting " John"))))
+           (outer-html ($ :span greeting " John"))))
 
     (are [expr expected] (= expected (outer-html expr))
       ($ :span greeting " " name)
@@ -98,6 +98,10 @@
         " "
         ($ :span name))
       "<div><span>Hello</span> <span>John</span></div>")))
+
+      ; ($ :<>
+      ;   ($ :div "hello"))
+      ; "<div>hello</div>")))
 
 (deftest compile-attributes-test
   (are [expr expected] (= expected (outer-html expr))
