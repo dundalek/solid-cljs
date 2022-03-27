@@ -2,6 +2,7 @@
   (:require ["solid-js/web" :as web])
   (:require-macros [solid.alpha.web]))
 
+(def render web/render)
 (def template web/template)
 (def insert web/insert)
 (def create-component web/createComponent)

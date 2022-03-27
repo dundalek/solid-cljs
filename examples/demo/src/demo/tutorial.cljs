@@ -5,9 +5,9 @@
                        Show For Switch Match Dynamic Portal ErrorBoundary]]
    ["solid-js/web" :refer [template render createComponent insert]]
    ["solid-js/store" :refer [createStore]]
-   [solid.alpha.core :refer [defui1 $1] :rename {defui1 defui $1 $}]))
+   [solid.alpha.hyper :refer [defc $]]))
 
-(defui CountingComponent []
+(defc CountingComponent []
   (let [[count setCount] (createSignal 0)
         interval (js/setInterval #(setCount (fn [c] (+ c 1))) 1000)]
     (onCleanup #(js/clearInterval interval))
@@ -30,10 +30,10 @@
 
 ;; Tutorial
 
-(defui hello-world []
+(defc hello-world []
   ($ :div "Hello Solid World!"))
 
-(defui hello-world-svg []
+(defc hello-world-svg []
   (let [name "Solid"
         svg ($ :svg {:height "300" :width "400"}
               ($ :defs
@@ -46,7 +46,7 @@
       ($ :div "Hello " name "!")
       svg)))
 
-(defui counter []
+(defc counter []
   (let [[count setCount] (createSignal 0)
         double-count #(* (count) 2)]
     (createEffect #(js/console.log "The count is now" (count)))
@@ -56,14 +56,14 @@
       ($ :div
         "Double: " double-count))))
 
-(defui control-flow-show []
+(defc control-flow-show []
   (let [[logged-in set-logged-in] (createSignal false)
         toggle #(set-logged-in (not (logged-in)))]
     ($ Show {:when logged-in
              :fallback ($ :button {:onClick toggle} "Log in")}
       ($ :button {:onClick toggle} "Log out"))))
 
-(defui control-flow-for []
+(defc control-flow-for []
   (let [[cats _set-cats] (createSignal
                           #js [{:id "J---aiyznGQ" :name "Keyboard Cat"}
                                {:id "z_AbfPXTKms" :name "Maru"}
@@ -75,7 +75,7 @@
             ($ :a {:target "_blank" :href (str "https://www.youtube.com/watch?v=" id)}
               (inc (i)) ": " name)))))))
 
-(defui control-flow-switch []
+(defc control-flow-switch []
   (let [[nums] (createSignal #js [3 7 11])
         [x set-x] (createSignal 11)]
     ($ :div
@@ -88,13 +88,13 @@
         ($ Match {:when #(> 5 (x))}
           ($ :p x " is less than 5"))))))
 
-(defui red-thing []
+(defc red-thing []
   ($ :strong {:style "color: red"} "Red Thing"))
 
-(defui green-thing []
+(defc green-thing []
   ($ :strong {:style "color: green"} "Green Thing"))
 
-(defui blue-thing []
+(defc blue-thing []
   ($ :strong {:style "color: blue"} "Blue Thing"))
 
 (def options
@@ -103,7 +103,7 @@
    "blue" blue-thing})
 
 ;; TODO
-(defui control-flow-dynamic []
+(defc control-flow-dynamic []
   (let [[selected set-selected] (createSignal "red")]
     ($ :<>
       ($ :select {:value selected
@@ -118,7 +118,7 @@
         ($ Match {:when #(= (selected) "green")} ($ green-thing))))))
 
 ;; TODO
-(defui control-flow-portal []
+(defc control-flow-portal []
   #_($ :div {:class "app-container"}
       ($ :p "Just some text inside a div that has a restricted size.")
       ($ Portal
@@ -127,18 +127,18 @@
             ($ :h1 "Popup")
             ($ :p "Some text you might need for something or other."))))))
 
-(defui broken [props]
+(defc broken [props]
   (throw (js/Error "Oh No"))
   ($ :<> "Never Getting Here"))
 
-(defui control-flow-error-boundary []
+(defc control-flow-error-boundary []
   ($ :<>
     ($ :div "Before")
     ($ ErrorBoundary {:fallback (fn [err] err)}
       (fn [] ($ broken)))
     ($ :div "After")))
 
-(defui lifecycles-on-mount []
+(defc lifecycles-on-mount []
   (let [[photos set-photos] (createSignal #js [])]
     (onMount (fn []
                (-> (js/fetch "https://jsonplaceholder.typicode.com/photos?_limit=4")
@@ -153,10 +153,10 @@
               ($ :img {:src (.-thumbnailUrl photo) :alt (.-title photo)})
               ($ :figcaption (.-title photo)))))))))
 
-(defui lifecycles-on-cleanup []
+(defc lifecycles-on-cleanup []
   ($ CountingComponent))
 
-(defui bindings-events []
+(defc bindings-events []
   (let [[pos set-pos] (createSignal {:x 0 :y 0})
         handle-mouse-move (fn [event]
                             (set-pos {:x (.-clientX event)
@@ -167,7 +167,7 @@
                          :background "#eee"}}
       "The mouse position is " #(:x (pos)) " x " #(:y (pos)))))
 
-(defui bindings-styles []
+(defc bindings-styles []
   (let [[num set-num] (createSignal 0)
         interval (js/setInterval #(set-num (-> (num) (+ 5) (mod 255))) 30)]
     (onCleanup #(js/clearInterval interval))
@@ -177,7 +177,7 @@
                                 ;:font-size (str (num) "px")})}
       "Some text")))
 
-(defui bindings-class-list []
+(defc bindings-class-list []
   (let [[current set-current] (createSignal "foo")]
     ($ :<>
       ($ :style ".selected { background-color: #ff3e00; color: white; }")
@@ -217,7 +217,7 @@
       (reset! !frame (js/requestAnimationFrame loop-fn))
       (onCleanup (fn [] (js/cancelAnimationFrame !frame))))))
 
-(defui bindings-refs []
+(defc bindings-refs []
   (let [!canvas (atom nil)]
     (onMount #(use-canvas-animation @!canvas))
     ($ :div
@@ -225,10 +225,10 @@
                   :height 256
                   :ref (fn [el] (reset! !canvas el))}))))
 
-(defui canvas [^js props]
+(defc canvas [^js props]
   ($ :canvas {:ref (.-ref props) :width "256" :height "256"}))
 
-(defui bindings-forwarding-refs []
+(defc bindings-forwarding-refs []
   (let [!canvas (atom nil)]
     (onMount #(use-canvas-animation @!canvas))
     ($ :div
@@ -240,14 +240,14 @@
        :speed "⚡️"
        :website "https://solidjs.com"})
 
-(defui info [^js props]
+(defc info [^js props]
   ($ :p
     "The " ($ :code (.-name props)) " package is " (.-speed props) " fast. "
     "Download version " (.-version props) " from "
     ($ :a {:href (str "https://www.npmjs.com/package/" (.-name props))} "npm") " and "
     ($ :a {:href (.-website props)} "learn more here")))
 
-(defui bindings-spreads []
+(defc bindings-spreads []
   ($ info pkg))
 
 (defn use-click-outside [el accessor]
@@ -258,7 +258,7 @@
     (onCleanup #(.removeEventListener (.-body js/document) "click" on-click))))
 
 ;; No sugar like `use:clickOutside`, can be done using `ref`
-(defui bindings-directives []
+(defc bindings-directives []
   (let [[show set-show] (createSignal false)]
     ($ :<>
       ($ :style ".modal {
@@ -273,12 +273,12 @@
           "Some Modal")))))
 
 ;; TODO figure out how to do destructuring
-(defui greeting [^js props]
+(defc greeting [^js props]
   #_(let [merged (mergeProps #js {:greeting "Hi" :name "John"} props)]
       ($ :h3 (.-greeting merged) " " (.-name merged)))
   ($ :h3 #(or (.-greeting props) "Hi") " " #(or (.-name props) "John")))
 
-(defui props-default-props []
+(defc props-default-props []
   (let [[name set-name] (createSignal)]
     ($ :<>
       ($ greeting {:greeting "Hello"})
@@ -288,14 +288,14 @@
         "Set Name"))))
 
 ;; TODO
-(defui props-splitting-props [])
+(defc props-splitting-props [])
 
 ;; TODO
-(defui props-children [])
+(defc props-children [])
 
-(defui stores-nested-reactivity [])
+(defc stores-nested-reactivity [])
 
-(defui stores-create-store []
+(defc stores-create-store []
   (let [!input (atom nil)
         !todo-id (atom 0)
         [store set-store] (createStore #js {:todos #js [#js {:id -1
@@ -336,16 +336,16 @@
               (.. todo -text))))))))
 
 ;; TODO immer-style produce, likely more performant then re-creating the array
-(defui stores-mutation [])
+(defc stores-mutation [])
 
 ;; TODO - there should not be a gotcha with context
-(defui stores-context [])
+(defc stores-context [])
 
 ;; TODO - could try ratom instead of redux
 ;; reconcile function for reactive diffing
-(defui stores-immutable [])
+(defc stores-immutable [])
 
-(defui main []
+(defc main []
   ($ :<>
     ($ CountingComponent)
     ($ hello-world)

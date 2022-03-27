@@ -4,8 +4,7 @@
             [solid.alpha.web]
             ["solid-js" :as sj]
             [clojure.string :as str]
-            [goog.object]
-            [solid.alpha.core :refer [defc]]))
+            [goog.object]))
 
 (deftest compile-static-test
   (are [expr expected] (= expected expr)

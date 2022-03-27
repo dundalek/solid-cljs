@@ -1,7 +1,7 @@
 (ns demo.todos
   (:require ["solid-js" :refer [createEffect For]]
             ["solid-js/store" :refer [createStore]]
-            [solid.alpha.core :refer [defui1 $1] :rename {defui1 defui $1 $}]))
+            [solid.alpha.hyper :refer [defc $]]))
 
 (defn createLocalStore
   [initState]
@@ -12,7 +12,7 @@
      (fn [] (set! (.-todos js/localStorage) (.stringify js/JSON state))))
     [state setState]))
 
-(defui main []
+(defc main []
   (let [[state setState] (createLocalStore #js {:todos #js [] :newTitle "" :idCounter 0})]
     ($ :<>
       ($ :h3 "Simple Todos Example")

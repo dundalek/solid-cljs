@@ -18,5 +18,5 @@ clj -M:shadow:demo:browser-test:watch
 ```
 
 ```
-clj -M:shadow:todomvc:todomvc-watch
+clj -M:shadow:todomvc:watch-todomvc
 ```

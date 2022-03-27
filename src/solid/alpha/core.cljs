@@ -1,18 +1,15 @@
 (ns solid.alpha.core
-  (:require ["solid-js/h" :as hyperscript]
-            [cljs-bean.core]
-            [goog.object :as gobj]
-            ["solid-js" :as s]
+  (:require ["solid-js" :as solid]
             [solid.alpha.impl.array :as array])
   (:require-macros [solid.alpha.core]))
 
-#_(def proxy-props-handler
-    #js {:get (fn [target prop]
-                (fn [& args]
-                  (let [x (gobj/get target prop)]
-                    (if (fn? x)
-                      (apply x args)
-                      x))))})
+;; TODO use `signal` alias?
+(def create-signal solid/createSignal)
+;; TODO use `memo` alias?
+(def create-memo solid/createMemo)
+
+(def For solid/For)
+(def Show solid/Show)
 
 (declare make-rbean)
 
@@ -26,7 +23,7 @@
   ILookup
   (-lookup [_ k]
     (make-rbean
-     (s/createMemo
+     (solid/createMemo
       (fn [] (get (f) k)))))
   #_(-lookup [_ k not-found])
 
@@ -58,15 +55,7 @@
     (fn [] (x))
     x))
 
-(defn h [& args]
-  (->> args
-       (map wrap-rbean)
-       (apply hyperscript)))
-
-(def For s/For)
-(def Show s/Show)
-
-(def mapArray (.-mapArray ^js (array/solidInitArray s)))
+(def mapArray (.-mapArray ^js (array/solidInitArray solid)))
 ; (def mapArray (.-mapArray ^js (js/window.solidInitArray s)))
 
 (defn dispose [disposers]
@@ -86,26 +75,26 @@
         (let [new-items (or (coll) #js [])]
 
           (solid/untrack
-            (fn []
-              (dispose @!disposers)
-              (reset! !disposers #js [])
+           (fn []
+             (dispose @!disposers)
+             (reset! !disposers #js [])
               ; (reset! !mapped #js [])
-              (reset! !mapped (js/Array.))
-              (.forEach new-items
-                (fn [item j]
+             (reset! !mapped (js/Array.))
+             (.forEach new-items
+                       (fn [item j]
                   ;; mapper
-                  (aset @!mapped j
-                        (solid/createRoot
-                          (fn [dispose]
-                            (aset @!disposers j dispose)
-                            (map-fn item))))))
-              @!mapped))))))
+                         (aset @!mapped j
+                               (solid/createRoot
+                                (fn [dispose]
+                                  (aset @!disposers j dispose)
+                                  (map-fn item))))))
+             @!mapped))))))
 
 (defn reactive-for [items body]
   #_($js solid/For {:each items}
       body)
   (let [fallback js/undefined]
-    (s/createMemo
-      (fn []
-        (map-array items body fallback)))))
+    (solid/createMemo
+     (fn []
+       (map-array items body fallback)))))
 
