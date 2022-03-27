@@ -1,7 +1,7 @@
-(ns solid.impl.core
+(ns solid.alpha.impl.core
   (:require [camel-snake-kebab.core :as csk]
             [clojure.string :as str]
-            [solid.compiler :as compiler]
+            [solid.alpha.compiler :as compiler]
             [clojure.walk :as walk]))
 
 (defn defui1 [& body]
@@ -14,9 +14,9 @@
               body)]
     (cond
       (= el :<>) `(cljs.core/array ~@body)
-      (string? el) `(solid.core/h ~el ~@body)
-      (keyword? el) `(solid.core/h ~(name el) ~@body)
-      (symbol? el) `(solid.core/h ~el ~@body)
+      (string? el) `(solid.alpha.core/h ~el ~@body)
+      (keyword? el) `(solid.alpha.core/h ~(name el) ~@body)
+      (symbol? el) `(solid.alpha.core/h ~el ~@body)
       :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
                             {:el el})))))
 
@@ -34,9 +34,9 @@
                 body)]
       (cond
         (= el :<>) `(cljs.core/array ~@body)
-        (string? el) `(solid.core/h ~el ~@body)
-        (keyword? el) `(solid.core/h ~(name el) ~@body)
-        (symbol? el) `(solid.core/h ~el ~@body)
+        (string? el) `(solid.alpha.core/h ~el ~@body)
+        (keyword? el) `(solid.alpha.core/h ~(name el) ~@body)
+        (symbol? el) `(solid.alpha.core/h ~el ~@body)
         :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
                               {:el el})))))
 
@@ -45,7 +45,7 @@
     (if (seq params)
       `(defn ~fn-name [props#]
          (let [~(first params) (cljs-bean.core/bean
-                                (js/Proxy. props# solid.core/proxy-props-handler))]
+                                (js/Proxy. props# solid.alpha.core/proxy-props-handler))]
 
            ~@body))
       `(defn ~fn-name []
@@ -64,7 +64,7 @@
                              ;; keep attributes like aria-hidden
                              k)
                            ; v
-                           `(solid.core/wrap-rbean ~v)]))
+                           `(solid.alpha.core/wrap-rbean ~v)]))
                       props))
        other)
       body)))
@@ -72,15 +72,15 @@
 (defn $ [el & body]
   (cond
     (= el :<>) `(cljs.core/array ~@body)
-    (string? el) `(solid.core/h ~el ~@(with-js-props body))
-    (keyword? el) `(solid.core/h ~(name el) ~@(with-js-props body))
-    (symbol? el) `(solid.core/h ~el ~@body)
+    (string? el) `(solid.alpha.core/h ~el ~@(with-js-props body))
+    (keyword? el) `(solid.alpha.core/h ~(name el) ~@(with-js-props body))
+    (symbol? el) `(solid.alpha.core/h ~el ~@body)
     :else (throw (ex-info (str "Expected keyword or symbol as element, received: " el)
                           {:el el}))))
 
 (defn $js [el & body]
   (cond
-    (symbol? el) `(solid.core/h ~el ~@(with-js-props body))
+    (symbol? el) `(solid.alpha.core/h ~el ~@(with-js-props body))
     :else (throw (ex-info (str "Expected symbol as element, received: " el)
                           {:el el}))))
 
@@ -97,7 +97,7 @@
                        #_`(defn ~fn-name params
                             ~@body)
                        `(defn ~fn-name [props#]
-                          (let [~(first params) (solid.core/make-rprops props#)]
+                          (let [~(first params) (solid.alpha.core/make-rprops props#)]
                             ~@body))
                        `(defn ~fn-name []
                           ~@body))))]
@@ -107,26 +107,26 @@
        ~component)))
 
 (defn flow-for [[item items fallback-kw fallback] & body]
-  `(solid.core/$js solid.core/For (cljs.core/js-obj "each" ~items
-                                                    ~@(when (= fallback-kw :fallback)
-                                                        ["fallback" fallback]))
+  `(solid.alpha.core/$js solid.alpha.core/For (cljs.core/js-obj "each" ~items
+                                                                ~@(when (= fallback-kw :fallback)
+                                                                    ["fallback" fallback]))
 
      (fn [~item]
        ~@body)))
 
 (defn flow-if
   ([test then]
-   `(solid.core/$js solid.core/Show (cljs.core/js-obj "when" ~test)
+   `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test)
       (fn []
         ~then)))
   ([test then else]
-   `(solid.core/$js solid.core/Show (cljs.core/js-obj "when" ~test
-                                                      "fallback" ~else)
+   `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test
+                                                                  "fallback" ~else)
 
       (fn []
         ~then))))
 
 (defn flow-when [test & body]
-  `(solid.core/$js solid.core/Show (cljs.core/js-obj "when" ~test)
+  `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test)
      (fn []
        ~@body)))

@@ -1,11 +1,11 @@
-(ns solid.compiler-test
-  (:require [solid.compiler :as compiler :refer [compile-static compile-template] :rename {compile-static $s compile-template $}]
+(ns solid.alpha.compiler-test
+  (:require [solid.alpha.compiler :as compiler :refer [compile-static compile-template] :rename {compile-static $s compile-template $}]
             [clojure.test :refer [deftest are is]]
-            [solid.web]
+            [solid.alpha.web]
             ["solid-js" :as sj]
             [clojure.string :as str]
             [goog.object]
-            [solid.core :refer [defc]]))
+            [solid.alpha.core :refer [defc]]))
 
 (deftest compile-static-test
   (are [expr expected] (= expected expr)
@@ -125,8 +125,8 @@
     ;                   :width "10px"}})
     ; "<span style=\"background-color:blue;width:10px\"></span>"))
 
-#_(macroexpand '(solid.core/defc counter []
-                  (solid.compiler/compile-template :div "hello")))
+#_(macroexpand '(solid.alpha.core/defc counter []
+                  (solid.alpha.compiler/compile-template :div "hello")))
 
 
 

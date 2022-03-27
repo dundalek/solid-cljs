@@ -1,5 +1,6 @@
-(ns solid.web
-  (:require ["solid-js/web" :as web]))
+(ns solid.alpha.web
+  (:require ["solid-js/web" :as web])
+  (:require-macros [solid.alpha.web]))
 
 (def template web/template)
 (def insert web/insert)

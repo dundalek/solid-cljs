@@ -1,10 +1,10 @@
-(ns solid.core
+(ns solid.alpha.core
   (:require ["solid-js/h" :as hyperscript]
             [cljs-bean.core]
             [goog.object :as gobj]
             ["solid-js" :as s]
-            [solid.impl.array :as array])
-  (:require-macros [solid.core]))
+            [solid.alpha.impl.array :as array])
+  (:require-macros [solid.alpha.core]))
 
 #_(def proxy-props-handler
     #js {:get (fn [target prop]

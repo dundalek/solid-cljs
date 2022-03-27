@@ -1,20 +1,19 @@
-(ns solid.app
+(ns demo.main
   (:require
    ["solid-js" :as solid :refer [createSignal]]
    ["solid-js/web" :refer [render]]
-   [solid.core :as s :refer [defc #_$ $js]]
-   [solid.todos :as todos]
-   [solid.tutorial :as tutorial]
-   [solid.compiler :refer [compile-template] :rename {compile-template $}]
-   [solid.web]))
+   [demo.todos :as todos]
+   [demo.tutorial :as tutorial]
+   [solid.alpha.core :as s :refer [defc #_$ $js]]
+   [solid.alpha.web :refer [$]]))
 
 (defc counter [{:keys [size set-size add-ten]}]
   ($ :div
     ($ :button
-      {:onClick #(set-size inc)}
+      {:on-click #(set-size inc)}
       "Child Add")
     ($ :button
-      {:onClick add-ten}
+      {:on-click #(add-ten)}
       "Child Add Ten")
     ($ :div size)
     ($ :div #(* (size) 2))))
@@ -95,13 +94,13 @@
                               ($ :span id)
                               " "
                               ($ :span label))))))
-      (s/for [item #(into-array (items))]
-        (let [id (:id item)
-              label (:label item)]
-          ($ :div
-            ($ :span id)
-            " "
-            ($ :span label)))))))
+      #_(s/for [item #(into-array (items))]
+          (let [id (:id item)
+                label (:label item)]
+            ($ :div
+              ($ :span id)
+              " "
+              ($ :span label)))))))
 
 (defc simple []
   (let [[value set-value] (solid/createSignal 0)]
@@ -109,17 +108,17 @@
       "Value: " value)))
 
 (defc app []
-  ($ :<>
-    ($ simple)
+  ($ :div
+    "bla"
+    ($ :div "hello")
+    ; ($ simple)
 
-    #_($ :span {:aria-hidden "true"}
-        "hello")
-    #_($ colls)
+    ; ($ colls)))
 
-     ; ($ nested)))
-     ; ($ demo)
-    #_($ todos/main)))
-     ; ($ tutorial/main)))
+    ; ($ nested)
+    ; ($ demo)))
+    ($ todos/main)
+    ($ tutorial/main)))
 
 (defn ^:dev/after-load start []
   (let [el (.getElementById js/document "app")]

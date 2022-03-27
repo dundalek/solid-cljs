@@ -5,12 +5,13 @@
             9999 "target/test"}
 
  :builds
- {:app {:target :browser
-        :output-dir "public/js"
-        :asset-path "/js"
-        :modules {:app {:entries [solid.app]}}
-        :devtools {:reload-strategy :full
-                   :preloads [devtools.preload]}}
+ {:demo {:target :browser
+         :output-dir "public/js"
+         :asset-path "/js"
+         :modules {:demo {:entries [demo.main]
+                          :init-fn demo.main/main}}
+         :devtools {:reload-strategy :full
+                    :preloads [devtools.preload]}}
 
   :test {:target :browser-test
          :test-dir "target/test"}

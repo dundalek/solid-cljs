@@ -1,6 +1,6 @@
 {:lint-as
- {solid.core/defui1 clojure.core/defn
-  solid.core/defc clojure.core/defn
-  solid.core/for clojure.core/for
-  solid.core/if clojure.core/if
-  solid.core/when clojure.core/when}}
+ {solid.alpha.core/defui1 clojure.core/defn
+  solid.alpha.core/defc clojure.core/defn
+  solid.alpha.core/for clojure.core/for
+  solid.alpha.core/if clojure.core/if
+  solid.alpha.core/when clojure.core/when}}

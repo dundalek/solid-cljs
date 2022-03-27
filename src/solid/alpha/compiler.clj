@@ -1,4 +1,4 @@
-(ns solid.compiler
+(ns solid.alpha.compiler
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.passes :as ana.passes]
             [clojure.walk]))
@@ -65,7 +65,7 @@
                   (= k :class) (let [assig-expr `(goog.object/set ~el-sym "className" ~v)]
                                  (if (symbol? v)
                                    assig-expr
-                                   `(solid.web/effect
+                                   `(solid.alpha.web/effect
                                      (~'fn [] ~assig-expr))))
 
                   (str/starts-with? k-str "on")
@@ -82,7 +82,7 @@
 
 (defn compilable-template? [form]
   (and (seq? form)
-       (#{'$ 'compile-template 'solid.compiler/compile-template} (first form))))
+       (#{'$ 'compile-template 'solid.alpha.compiler/compile-template} (first form))))
 
 (declare analyze)
 (declare emit)
@@ -126,7 +126,7 @@
                                   (assoc :el-sym next-el-sym))
                      (-> acc
                          (update :template str "<!>")
-                         (update :ops conj `(.call solid.web/insert nil ~root-sym ~(emit node) ~(:el-sym acc)))
+                         (update :ops conj `(.call solid.alpha.web/insert nil ~root-sym ~(emit node) ~(:el-sym acc)))
                          (update :bindings into [next-el-sym `(.-nextSibling ~(:el-sym acc))])
                          (assoc :el-sym next-el-sym)))
                    (assoc :previous-op (:op node)))))
@@ -188,8 +188,7 @@
 
 (defn emit-element [{:keys [el-sym template bindings ops]}]
   (let [tmpl-sym (gensym "tmpl")
-        tmpl-expr `(.call solid.web/template nil ~template)]
-    (println "templates" *templates* template)
+        tmpl-expr `(.call solid.alpha.web/template nil ~template)]
     (when *templates*
       (swap! *templates* assoc tmpl-sym tmpl-expr))
     (list `(fn []
@@ -205,7 +204,7 @@
   (case op
     :element (emit-element ast)
     :fragment `(cljs.core/array ~@(->> ast :args (map emit)))
-    :component `(.call solid.web/create-component nil ~(:component ast) ~@(->> ast :args (map emit)))
+    :component `(.call solid.alpha.web/create-component nil ~(:component ast) ~@(->> ast :args (map emit)))
     :expression (:val ast)
     :literal (str (:val ast))))
 
@@ -234,11 +233,11 @@
     '($ :<>
        ($ :div "hello"))))
 
-  (macroexpand '(solid.compiler/compile-template :div "hello"
-                                                 (solid.compiler/compile-template :span "world")))
-  (macroexpand '(solid.core/defc counter []
-                  (solid.compiler/compile-template :div "hello"
-                                                   (solid.compiler/compile-template :span "world"))))
+  (macroexpand '(solid.alpha.compiler/compile-template :div "hello"
+                                                 (solid.alpha.compiler/compile-template :span "world")))
+  (macroexpand '(solid.alpha.core/defc counter []
+                  (solid.alpha.compiler/compile-template :div "hello"
+                                                   (solid.alpha.compiler/compile-template :span "world"))))
 
   ; (macroexpand '(compile-template :span {:class cls}))
 

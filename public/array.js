@@ -1,4 +1,4 @@
-// goog.provide("solid.impl.array");
+// goog.provide("solid.alpha.impl.array");
 
 // TODO: figure out how to do imports in goog modules
 window.solidInitArray = function init({ onCleanup, createRoot, untrack, createSignal, Owner, Accessor, Setter }) {

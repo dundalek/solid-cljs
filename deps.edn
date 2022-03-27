@@ -1,34 +1,38 @@
 {:deps
  {org.clojure/clojure {:mvn/version "1.10.3"}
-  org.clojure/tools.analyzer {:mvn/version "1.1.0"}}
+  org.clojure/clojurescript {:mvn/version "1.10.891"}
+  org.clojure/tools.analyzer {:mvn/version "1.1.0"}
+  cljs-bean/cljs-bean {:mvn/version "1.8.0"}
+  camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}
 
  :aliases
- {:app
-  {:extra-deps {org.clojure/clojurescript {:mvn/version "1.10.891"}
-                thheller/shadow-cljs {:mvn/version "2.16.5"}
-                binaryage/devtools {:mvn/version "0.9.7"}
-                cljs-bean/cljs-bean {:mvn/version "1.8.0"}
-                re-frame/re-frame {:mvn/version "1.2.0"}
-                reagent/reagent {:mvn/version "1.1.1"}
-                camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}}
-   :paths ["src" "examples/todomvc/src"]}
+ {:shadow
+  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.16.5"}
+                binaryage/devtools {:mvn/version "0.9.7"}}}
+
+  :demo
+  {:extra-paths ["examples/demo/src"]}
+
+  :browser-test
+  {:extra-paths ["test"]}
+
+  :todomvc
+  {:extra-deps {re-frame/re-frame {:mvn/version "1.2.0"}
+                reagent/reagent {:mvn/version "1.1.1"}}
+   :extra-paths ["examples/todomvc/src"]}
+
+  :watch-demo
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "demo"]}
 
   :watch
-  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app" "todomvc" "test"]}
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "demo" "test"]}
 
   :watch-test
   {:extra-paths ["test"]
-   :main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app" "test"]}
+   :main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "test"]}
 
-  :test
-  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}}
-   :main-opts ["-m" "kaocha.runner"]}
-
-  :coverage
-  {:extra-paths ["test"]
-   :extra-deps {cloverage/cloverage {:mvn/version "1.2.2"}}
-   :main-opts ["-m" "cloverage.coverage"
-               "--ns-regex" "wm.core" "--src-ns-path" "src" "--test-ns-path" "test"]}
+  :watch-todomvc
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "todomvc"]}
 
   :fmt
   {:extra-deps {cljfmt/cljfmt {:mvn/version "0.6.4"}}

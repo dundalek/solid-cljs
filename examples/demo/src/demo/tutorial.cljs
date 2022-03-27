@@ -1,11 +1,11 @@
-(ns solid.tutorial
+(ns demo.tutorial
   (:require
    [clojure.string :as str]
    ["solid-js" :refer [createSignal createEffect onCleanup onMount mergeProps
                        Show For Switch Match Dynamic Portal ErrorBoundary]]
    ["solid-js/web" :refer [template render createComponent insert]]
    ["solid-js/store" :refer [createStore]]
-   [solid.core :refer [defui1 $1] :rename {defui1 defui $1 $}]))
+   [solid.alpha.core :refer [defui1 $1] :rename {defui1 defui $1 $}]))
 
 (defui CountingComponent []
   (let [[count setCount] (createSignal 0)

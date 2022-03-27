@@ -1,6 +1,6 @@
-(ns solid.core
+(ns solid.alpha.core
   (:refer-clojure :exclude [if when for])
-  (:require [solid.impl.core :as core]))
+  (:require [solid.alpha.impl.core :as core]))
 
 (defmacro defui1 [& body] (apply core/defui1 body))
 (defmacro $1 [& body] (apply core/$1 body))

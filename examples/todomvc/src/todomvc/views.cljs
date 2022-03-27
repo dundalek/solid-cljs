@@ -2,7 +2,8 @@
   (:require [re-frame.core :as rf :refer [dispatch]]
             [re-frame.db :refer [app-db]]
             [clojure.string :as str]
-            [solid.core :as sl :refer [defc $ $js]]
+            [solid.alpha.core :as sl :refer [defc $ $js]]
+            [solid.alpha.web]
             ["solid-js" :as s]
             [reagent.ratom :as ratom]))
 
