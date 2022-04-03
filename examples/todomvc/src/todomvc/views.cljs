@@ -1,21 +1,20 @@
 (ns todomvc.views
-  (:require [re-frame.core :as rf :refer [dispatch]]
-            [re-frame.db :refer [app-db]]
-            [clojure.string :as str]
-            [solid.alpha.core :as sl :refer [defc $ $js]]
-            [solid.alpha.web]
-            ["solid-js" :as s]
-            [reagent.ratom :as ratom]))
+  (:require
+   [clojure.string :as str]
+   [re-frame.core :as rf :refer [dispatch]]
+   [reagent.ratom :as ratom]
+   [solid.alpha.core :as sl]
+   [solid.alpha.hyper :refer [defc $]]))
 
 (defn use-reaction [reaction]
   (let [key (js-obj)
         initial-value (binding [ratom/*ratom-context* (js-obj)]
                         @reaction)
-        [sig set-value] (s/createSignal initial-value)]
+        [sig set-value] (sl/create-signal initial-value)]
     (add-watch reaction key (fn [_key _ref _old-value new-value]
                               (set-value new-value)))
-    (s/onCleanup (fn []
-                   (remove-watch reaction key)))
+    (sl/on-cleanup (fn []
+                     (remove-watch reaction key)))
     sig))
 
 (defn subscribe
@@ -25,7 +24,7 @@
    (use-reaction (rf/subscribe query dynv))))
 
 (defc todo-input [{:keys [id class placeholder title on-save on-stop]}]
-  (let [[value set-value] (s/createSignal @title)
+  (let [[value set-value] (sl/create-signal @title)
         stop (fn []
                (set-value "")
                (when on-stop (on-stop)))
@@ -48,7 +47,7 @@
                        nil))})))
 
 (defc todo-item [{:keys [id done title]}]
-  (let [[editing set-editing] (s/createSignal false)]
+  (let [[editing set-editing] (sl/create-signal false)]
     ($ :li {:class #(str (when @done "completed ")
                          (when (editing) "editing"))}
       ($ :div.view
@@ -58,13 +57,13 @@
            :on-change #(dispatch [:toggle-done @id])})
         ($ :label
           {:on-dblclick #(set-editing true)}
-          title)
+          @title)
         ($ :button.destroy
           {:on-click #(dispatch [:delete-todo @id])}))
       (sl/when editing
         ($ todo-input
           {:class "edit"
-           :title #(title)
+           :title title
            :on-save (fn [text]
                       (js/console.log "on-save" text)
                       (if (seq text)
@@ -72,8 +71,7 @@
                         (dispatch [:delete-todo @id])))
            :on-stop #(set-editing false)})))))
 
-(defc task-list
-  []
+(defc task-list []
   (let [visible-todos (subscribe [:visible-todos])
         all-complete? (subscribe [:all-complete?])]
     ($ :section#main
@@ -85,16 +83,15 @@
         {:for "toggle-all"}
         "Mark all as complete")
       ($ :ul#todo-list
-        (sl/for [todo #(to-array (visible-todos))]
-          ($ todo-item todo))))))
+        (sl/for [todo (to-array (visible-todos))]
+          ($ todo-item (sl/make-rprops todo)))))))
 
-(defc footer-controls
-  []
+(defc footer-controls []
   (let [;; TODO support reactive desctructuring
         ;[active done] (subscribe [:footer-counts])
         footer-counts (subscribe [:footer-counts])
-        active (s/createMemo #(first (footer-counts)))
-        done (s/createMemo #(second (footer-counts)))
+        active (sl/create-memo #(first (footer-counts)))
+        done (sl/create-memo #(second (footer-counts)))
         showing       (subscribe [:showing])
         a-fn          (fn [filter-kw txt]
                         ($ :a {:class #(when (= filter-kw (showing)) "selected")
@@ -102,7 +99,7 @@
                           txt))]
     ($ :footer#footer
       ($ :span#todo-count
-        ($ :strong active) " " #(case (active) 1 "item" "items") " left")
+        ($ :strong active) " " (case (active) 1 "item" "items") " left")
       ($ :ul#filters
         ($ :li (a-fn :all    "All"))
         ($ :li (a-fn :active "Active"))
@@ -111,8 +108,7 @@
         ($ :button#clear-completed {:on-click #(dispatch [:clear-completed])}
           "Clear completed")))))
 
-(defc task-entry
-  []
+(defc task-entry []
   ($ :header#header
     ($ :h1 "todos")
     ($ todo-input
@@ -121,8 +117,7 @@
        :on-save #(when-not (str/blank? %)
                    (dispatch [:add-todo %]))})))
 
-(defc todo-app
-  []
+(defc todo-app []
   (let [todos (subscribe [:todos])]
     ($ :<>
       ($ :section#todoapp
