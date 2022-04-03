@@ -4,7 +4,7 @@
    [re-frame.core :as rf :refer [dispatch]]
    [reagent.ratom :as ratom]
    [solid.alpha.core :as sl]
-   [solid.alpha.hyper :refer [defc $]]))
+   [solid.alpha.hyper :refer [defc $ $js]]))
 
 (defn use-reaction [reaction]
   (let [key (js-obj)
@@ -82,8 +82,11 @@
         {:for "toggle-all"}
         "Mark all as complete")
       ($ :ul.todo-list
-        (sl/for [todo (to-array (visible-todos))]
-          ($ todo-item (sl/make-rprops todo)))))))
+        ($js sl/For {:each #(to-array (visible-todos))}
+          (fn [todo]
+            ($ todo-item (sl/make-rprops todo))))
+        #_(sl/for [todo #(to-array (visible-todos))]
+            ($ todo-item (sl/make-rprops todo)))))))
 
 (defc footer-controls []
   (let [;; TODO support reactive desctructuring
