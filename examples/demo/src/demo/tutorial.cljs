@@ -1,32 +1,16 @@
 (ns demo.tutorial
   (:require
    [clojure.string :as str]
-   ["solid-js" :refer [createSignal createEffect onCleanup onMount mergeProps
-                       Show For Switch Match Dynamic Portal ErrorBoundary]]
-   ["solid-js/web" :refer [template render createComponent insert]]
+   ["solid-js" :refer [Show For Switch Match Dynamic Portal ErrorBoundary]]
    ["solid-js/store" :refer [createStore]]
-   [solid.alpha.hyper :refer [defc $]]))
+   [solid.alpha.hyper :refer [defc $]]
+   [solid.alpha.core :as sc]))
 
 (defc CountingComponent []
-  (let [[count setCount] (createSignal 0)
+  (let [[count setCount] (sc/create-signal 0)
         interval (js/setInterval #(setCount (fn [c] (+ c 1))) 1000)]
-    (onCleanup #(js/clearInterval interval))
+    (sc/on-cleanup #(js/clearInterval interval))
     ($ :div "Count value is " count)))
-
-(comment
-  (def _tmpl$ (template "<div>Count value is </div>" 2))
-
-  (defn CountingComponent []
-    (let [[count setCount] (createSignal 0)
-          interval (js/setInterval (fn []
-                                     (setCount (fn [c] (+ c 1))))
-                                   1000)]
-      (onCleanup (fn [] (js/clearInterval interval)))
-      ((fn []
-         (let [_el$ (.cloneNode _tmpl$ true)
-               _ (.-firstChild _el$)]
-           (insert _el$ count nil)
-           _el$))))))
 
 ;; Tutorial
 
@@ -47,24 +31,24 @@
       svg)))
 
 (defc counter []
-  (let [[count setCount] (createSignal 0)
+  (let [[count setCount] (sc/create-signal 0)
         double-count #(* (count) 2)]
-    (createEffect #(js/console.log "The count is now" (count)))
+    (sc/create-effect #(js/console.log "The count is now" (count)))
     ($ :div
-      ($ :button {:onClick #(setCount (inc (count)))}
+      ($ :button {:on-click #(setCount (inc (count)))}
         "Click Me")
       ($ :div
         "Double: " double-count))))
 
 (defc control-flow-show []
-  (let [[logged-in set-logged-in] (createSignal false)
+  (let [[logged-in set-logged-in] (sc/create-signal false)
         toggle #(set-logged-in (not (logged-in)))]
     ($ Show {:when logged-in
              :fallback ($ :button {:onClick toggle} "Log in")}
       ($ :button {:onClick toggle} "Log out"))))
 
 (defc control-flow-for []
-  (let [[cats _set-cats] (createSignal
+  (let [[cats _set-cats] (sc/create-signal
                           #js [{:id "J---aiyznGQ" :name "Keyboard Cat"}
                                {:id "z_AbfPXTKms" :name "Maru"}
                                {:id "OUtn3pvWmpg" :name "Henri The Existential Cat"}])]
@@ -76,8 +60,8 @@
               (inc (i)) ": " name)))))))
 
 (defc control-flow-switch []
-  (let [[nums] (createSignal #js [3 7 11])
-        [x set-x] (createSignal 11)]
+  (let [[nums] (sc/create-signal #js [3 7 11])
+        [x set-x] (sc/create-signal 11)]
     ($ :div
       ($ For {:each nums}
         (fn [num]
@@ -104,7 +88,7 @@
 
 ;; TODO
 (defc control-flow-dynamic []
-  (let [[selected set-selected] (createSignal "red")]
+  (let [[selected set-selected] (sc/create-signal "red")]
     ($ :<>
       ($ :select {:value selected
                   :onInput (fn [^js e] (set-selected (.-currentTarget.value e)))}
@@ -139,11 +123,11 @@
     ($ :div "After")))
 
 (defc lifecycles-on-mount []
-  (let [[photos set-photos] (createSignal #js [])]
-    (onMount (fn []
-               (-> (js/fetch "https://jsonplaceholder.typicode.com/photos?_limit=4")
-                   (.then (fn [res] (.json res)))
-                   (.then set-photos))))
+  (let [[photos set-photos] (sc/create-signal #js [])]
+    (sc/on-mount (fn []
+                   (-> (js/fetch "https://jsonplaceholder.typicode.com/photos?_limit=4")
+                       (.then (fn [res] (.json res)))
+                       (.then set-photos))))
     ($ :<>
       ($ :h1 "Photo Album")
       ($ :div {:class "photos" :style "display: flex"}
@@ -157,7 +141,7 @@
   ($ CountingComponent))
 
 (defc bindings-events []
-  (let [[pos set-pos] (createSignal {:x 0 :y 0})
+  (let [[pos set-pos] (sc/create-signal {:x 0 :y 0})
         handle-mouse-move (fn [event]
                             (set-pos {:x (.-clientX event)
                                       :y (.-clientY event)}))]
@@ -168,9 +152,9 @@
       "The mouse position is " #(:x (pos)) " x " #(:y (pos)))))
 
 (defc bindings-styles []
-  (let [[num set-num] (createSignal 0)
+  (let [[num set-num] (sc/create-signal 0)
         interval (js/setInterval #(set-num (-> (num) (+ 5) (mod 255))) 30)]
-    (onCleanup #(js/clearInterval interval))
+    (sc/on-cleanup #(js/clearInterval interval))
     ($ :div {:style (fn [] #js {:color (str "rgb(" (num) ", 180, " (num) ")")
                                 :font-weight 800
                                 :font-size "32px"})}
@@ -178,7 +162,7 @@
       "Some text")))
 
 (defc bindings-class-list []
-  (let [[current set-current] (createSignal "foo")]
+  (let [[current set-current] (sc/create-signal "foo")]
     ($ :<>
       ($ :style ".selected { background-color: #ff3e00; color: white; }")
       ($ :button {:classList (fn [] #js {:selected (= (current) "foo")})
@@ -215,11 +199,11 @@
                       (aset (+ p 3) 255))))
                 (.putImageData ctx image-data 0 0)))]
       (reset! !frame (js/requestAnimationFrame loop-fn))
-      (onCleanup (fn [] (js/cancelAnimationFrame !frame))))))
+      (sc/on-cleanup #(js/cancelAnimationFrame !frame)))))
 
 (defc bindings-refs []
   (let [!canvas (atom nil)]
-    (onMount #(use-canvas-animation @!canvas))
+    (sc/on-mount #(use-canvas-animation @!canvas))
     ($ :div
       ($ :canvas {:width 256
                   :height 256
@@ -230,7 +214,7 @@
 
 (defc bindings-forwarding-refs []
   (let [!canvas (atom nil)]
-    (onMount #(use-canvas-animation @!canvas))
+    (sc/on-mount #(use-canvas-animation @!canvas))
     ($ :div
       ($ canvas {:ref (fn [el] (reset! !canvas el))}))))
 
@@ -255,11 +239,11 @@
                    (and (not (.contains el (.-target e)))
                         (accessor)))]
     (.addEventListener (.-body js/document) "click" on-click)
-    (onCleanup #(.removeEventListener (.-body js/document) "click" on-click))))
+    (sc/on-cleanup #(.removeEventListener (.-body js/document) "click" on-click))))
 
 ;; No sugar like `use:clickOutside`, can be done using `ref`
 (defc bindings-directives []
-  (let [[show set-show] (createSignal false)]
+  (let [[show set-show] (sc/create-signal false)]
     ($ :<>
       ($ :style ".modal {
                     padding: 16px;
@@ -279,7 +263,7 @@
   ($ :h3 #(or (.-greeting props) "Hi") " " #(or (.-name props) "John")))
 
 (defc props-default-props []
-  (let [[name set-name] (createSignal)]
+  (let [[name set-name] (sc/create-signal)]
     ($ :<>
       ($ greeting {:greeting "Hello"})
       ($ greeting {:name "Jeremy"})

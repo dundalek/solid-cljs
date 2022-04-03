@@ -1,10 +1,11 @@
 (ns demo.main
   (:require
    ; [demo.todos :as todos]
-   ; [demo.tutorial :as tutorial]
+   [demo.direct :as direct]
+   [demo.tutorial :as tutorial]
    [solid.alpha.core :as sc]
-   [solid.alpha.web :as web] ;:refer [defc $]]
-   [solid.alpha.hyper :refer [defc $]]))
+   [solid.alpha.hyper :refer [defc $]]
+   [solid.alpha.web :as web])) ;:refer [defc $]]
 
 (defc counter [{:keys [size set-size add-ten]}]
   ($ :div
@@ -114,6 +115,9 @@
     ($ :h2 "Simple counter")
     ($ simple)
 
+    ($ :h2 "Direct using Solid primitives")
+    ($ direct/CountingComponent)
+
     ($ :h2 "demo")
     ($ demo)
 
@@ -121,10 +125,11 @@
     ($ nested)
 
     ($ :h2 "colls")
-    ($ colls)))
+    ($ colls)
 
     ; ($ todos/main)
-    ; ($ tutorial/main)))
+    ($ :h2 "tutorial")
+    ($ tutorial/main)))
 
 (defn ^:dev/after-load start []
   (let [el (.getElementById js/document "app")]

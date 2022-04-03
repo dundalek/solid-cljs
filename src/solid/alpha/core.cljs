@@ -7,6 +7,9 @@
 (def create-signal solid/createSignal)
 ;; TODO use `memo` alias?
 (def create-memo solid/createMemo)
+(def create-effect solid/createEffect)
+(def on-cleanup solid/onCleanup)
+(def on-mount solid/onMount)
 
 (def For solid/For)
 (def Show solid/Show)
