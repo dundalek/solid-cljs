@@ -23,7 +23,7 @@
   ([query dynv]
    (use-reaction (rf/subscribe query dynv))))
 
-(defc todo-input [{:keys [id class placeholder title on-save on-stop]}]
+(defc todo-input [{:keys [class placeholder title on-save on-stop]}]
   (let [[value set-value] (sl/create-signal @title)
         stop (fn []
                (set-value "")
@@ -32,8 +32,7 @@
                (on-save (-> (value) str str/trim))
                (stop))]
     ($ :input
-      {:id id
-       :class class
+      {:class class
        :type        "text"
        :placeholder placeholder
        :value       value
@@ -74,15 +73,15 @@
 (defc task-list []
   (let [visible-todos (subscribe [:visible-todos])
         all-complete? (subscribe [:all-complete?])]
-    ($ :section#main
-      ($ :input#toggle-all
+    ($ :section.main
+      ($ :input#toggle-all.toggle-all
         {:type "checkbox"
          :checked all-complete?
          :on-change #(dispatch [:complete-all-toggle])})
       ($ :label
         {:for "toggle-all"}
         "Mark all as complete")
-      ($ :ul#todo-list
+      ($ :ul.todo-list
         (sl/for [todo (to-array (visible-todos))]
           ($ todo-item (sl/make-rprops todo)))))))
 
@@ -97,22 +96,22 @@
                         ($ :a {:class #(when (= filter-kw (showing)) "selected")
                                :on-click #(dispatch [:set-showing filter-kw])}
                           txt))]
-    ($ :footer#footer
-      ($ :span#todo-count
+    ($ :footer.footer
+      ($ :span.todo-count
         ($ :strong active) " " (case (active) 1 "item" "items") " left")
-      ($ :ul#filters
+      ($ :ul.filters
         ($ :li (a-fn :all    "All"))
         ($ :li (a-fn :active "Active"))
         ($ :li (a-fn :done   "Completed")))
       (sl/when #(pos? (done))
-        ($ :button#clear-completed {:on-click #(dispatch [:clear-completed])}
+        ($ :button.clear-completed {:on-click #(dispatch [:clear-completed])}
           "Clear completed")))))
 
 (defc task-entry []
-  ($ :header#header
+  ($ :header.header
     ($ :h1 "todos")
     ($ todo-input
-      {:id "new-todo"
+      {:class "new-todo"
        :placeholder "What needs to be done?"
        :on-save #(when-not (str/blank? %)
                    (dispatch [:add-todo %]))})))
@@ -120,10 +119,10 @@
 (defc todo-app []
   (let [todos (subscribe [:todos])]
     ($ :<>
-      ($ :section#todoapp
+      ($ :section.todoapp
         ($ task-entry)
         (sl/when #(seq (todos))
           ($ task-list))
         ($ footer-controls))
-      ($ :footer#info
+      ($ :footer.info
         ($ :p "Double-click to edit a todo")))))
