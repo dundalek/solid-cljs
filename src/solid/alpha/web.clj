@@ -1,5 +1,6 @@
 (ns solid.alpha.web
-  (:require [solid.alpha.compiler :as compiler]))
+  (:require [solid.alpha.compiler :as compiler]
+            [clojure.walk :as walk]))
 
 (defn- compile-all [form]
   (walk/prewalk (fn [x] (if (compiler/compilable-template? x) (compiler/compile-template* x) x))

@@ -1,7 +1,7 @@
 (ns demo.todos
   (:require ["solid-js" :refer [createEffect For]]
             ["solid-js/store" :refer [createStore]]
-            [solid.alpha.hyper :refer [defc $]]))
+            [solid.alpha.hyper :refer [defc $ $js]]))
 
 (defn createLocalStore
   [initState]
@@ -30,7 +30,7 @@
                                                            :done false})
                                               :newTitle ""})))}
         "+")
-      ($ For {:each (fn [] (.-todos state))}
+      ($js For {:each (fn [] (.-todos state))}
         (fn [todo i]
           ($ :div
             ($ :input {:type "checkbox"

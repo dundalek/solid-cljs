@@ -1,8 +1,15 @@
 (ns solid.alpha.impl.core
   (:require [camel-snake-kebab.core :as csk]
             [clojure.string :as str]
-            [solid.alpha.compiler :as compiler]
-            [clojure.walk :as walk]))
+            [solid.alpha.compiler :as compiler]))
+
+(defn wrap-expression [v]
+  (if (compiler/primitive? v)
+    v
+    `(fn [] ~v)))
+
+(defn wrap-expression-args [children]
+  (map wrap-expression children))
 
 (defn with-js-props [body]
   (let [[props & other] body]
@@ -21,8 +28,8 @@
                              k)
                            `(solid.alpha.core/wrap-rbean ~v)]))
                       props))
-       other)
-      body)))
+       (wrap-expression-args other))
+      (wrap-expression-args body))))
 
 (defn with-clj-props [body]
   (let [[props & other] body]

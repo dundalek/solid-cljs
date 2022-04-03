@@ -234,10 +234,10 @@
        ($ :div "hello"))))
 
   (macroexpand '(solid.alpha.compiler/compile-template :div "hello"
-                                                 (solid.alpha.compiler/compile-template :span "world")))
+                                                       (solid.alpha.compiler/compile-template :span "world")))
   (macroexpand '(solid.alpha.core/defc counter []
                   (solid.alpha.compiler/compile-template :div "hello"
-                                                   (solid.alpha.compiler/compile-template :span "world"))))
+                                                         (solid.alpha.compiler/compile-template :span "world"))))
 
   ; (macroexpand '(compile-template :span {:class cls}))
 

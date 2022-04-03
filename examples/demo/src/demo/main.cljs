@@ -1,6 +1,6 @@
 (ns demo.main
   (:require
-   ; [demo.todos :as todos]
+   [demo.todos :as todos]
    [demo.direct :as direct]
    [demo.tutorial :as tutorial]
    [solid.alpha.core :as sc]
@@ -15,8 +15,8 @@
     ($ :button
       {:on-click #(add-ten)}
       "Child Add Ten")
-    ($ :div #(size))
-    ($ :div #(* (size) 2))))
+    ($ :div @size)
+    ($ :div (* @size 2))))
 
 (defc demo []
   (let [[size set-size] (sc/create-signal 10)]
@@ -25,7 +25,7 @@
       ($ counter {:size size
                   :set-size set-size
                   :add-ten #(set-size (+ (size) 10))})
-      ($ :div "Static value:")
+      ($ :div "Static value - buttons do nothing")
       ($ counter {:size 100
                   :set-size #()
                   :add-ten #()}))))
@@ -34,12 +34,12 @@
   (let [{:keys [a]} state
         {:keys [b1 b2]} a]
     ($ :div
-      ($ :div #(str @b1 " " (js/Date.now)))
-      ($ :div #(str @b2 " " (js/Date.now))))))
+      ($ :div (str @b1 " " (js/Date.now)))
+      ($ :div (str @b2 " " (js/Date.now))))))
 
 (defn nested-b2 [props]
   (let [{:keys [b2]} (-> props :state :a)]
-    ($ :div #(str @b2 " " (js/Date.now)))))
+    ($ :div (str @b2 " " (js/Date.now)))))
 
 (defc nested []
   (let [[state set-state] (sc/create-signal {:a {:b1 0
@@ -58,8 +58,8 @@
       ($ :div
         ($ :button {:on-click #(set-state (update-in (state) [:c] inc))}
           "C")
-        ($ :div #(c))
-        ($ :div #(str (c) " " (js/Date.now)))))))
+        ($ :div @c)
+        ($ :div (str @c " " (js/Date.now)))))))
 
 (defn build-data []
   (->> (range 10)
@@ -91,9 +91,9 @@
                                                    (into [] (remove #(identical? item %))
                                                          (items)))))}
                              ($ :div
-                               ($ :span id)
+                               ($ :span (id))
                                " "
-                               ($ :span label))))))
+                               ($ :span (label)))))))
       #_(sc/for [item #(into-array (items))]
           (let [id (:id item)
                 label (:label item)]
@@ -105,7 +105,7 @@
 (defc simple []
   (let [[value set-value] (sc/create-signal 0)]
     ($ :button {:on-click #(set-value inc)}
-      "Value: " value)))
+      "Value: " (value))))
 
 (defc app []
   ($ :div
@@ -127,7 +127,9 @@
     ($ :h2 "colls")
     ($ colls)
 
-    ; ($ todos/main)
+    ($ :h2 "todos")
+    ($ todos/main)
+
     ($ :h2 "tutorial")
     ($ tutorial/main)))
 

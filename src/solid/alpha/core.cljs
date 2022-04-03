@@ -22,6 +22,9 @@
     (make-rbean
      (get m k))))
 
+;; Calling this bean since it uses protocols like cljs-bean
+;; But it is also similar to Solid store, which wraps a value with nested reactivity getters.
+;; Should it be named reactive store?
 (deftype RBean [f]
   ILookup
   (-lookup [_ k]
@@ -35,6 +38,7 @@
     (f))
   (-invoke [_ a]
     (f a))
+  ;; TODO more arities
 
   IDeref
   (-deref [_]

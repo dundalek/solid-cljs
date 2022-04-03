@@ -3,12 +3,12 @@
    [clojure.string :as str]
    ["solid-js" :refer [Show For Switch Match Dynamic Portal ErrorBoundary]]
    ["solid-js/store" :refer [createStore]]
-   [solid.alpha.hyper :refer [defc $]]
+   [solid.alpha.hyper :refer [defc $ $js]]
    [solid.alpha.core :as sc]))
 
 (defc CountingComponent []
-  (let [[count setCount] (sc/create-signal 0)
-        interval (js/setInterval #(setCount (fn [c] (+ c 1))) 1000)]
+  (let [[count set-count] (sc/create-signal 0)
+        interval (js/setInterval #(set-count inc) 1000)]
     (sc/on-cleanup #(js/clearInterval interval))
     ($ :div "Count value is " count)))
 
@@ -31,29 +31,29 @@
       svg)))
 
 (defc counter []
-  (let [[count setCount] (sc/create-signal 0)
+  (let [[count set-count] (sc/create-signal 0)
         double-count #(* (count) 2)]
     (sc/create-effect #(js/console.log "The count is now" (count)))
     ($ :div
-      ($ :button {:on-click #(setCount (inc (count)))}
+      ($ :button {:on-click #(set-count inc)}
         "Click Me")
       ($ :div
-        "Double: " double-count))))
+        "Double: " (double-count)))))
 
 (defc control-flow-show []
   (let [[logged-in set-logged-in] (sc/create-signal false)
         toggle #(set-logged-in (not (logged-in)))]
-    ($ Show {:when logged-in
-             :fallback ($ :button {:onClick toggle} "Log in")}
-      ($ :button {:onClick toggle} "Log out"))))
+    ($js Show {:when logged-in
+               :fallback ($ :button {:on-click toggle} "Log in")}
+      ($ :button {:on-click toggle} "Log out"))))
 
 (defc control-flow-for []
-  (let [[cats _set-cats] (sc/create-signal
-                          #js [{:id "J---aiyznGQ" :name "Keyboard Cat"}
-                               {:id "z_AbfPXTKms" :name "Maru"}
-                               {:id "OUtn3pvWmpg" :name "Henri The Existential Cat"}])]
+  (let [[cats _] (sc/create-signal
+                  #js [{:id "J---aiyznGQ" :name "Keyboard Cat"}
+                       {:id "z_AbfPXTKms" :name "Maru"}
+                       {:id "OUtn3pvWmpg" :name "Henri The Existential Cat"}])]
     ($ :ul
-      ($ For {:each cats}
+      ($js For {:each cats}
         (fn [{:keys [name id]} i]
           ($ :li
             ($ :a {:target "_blank" :href (str "https://www.youtube.com/watch?v=" id)}
@@ -63,14 +63,14 @@
   (let [[nums] (sc/create-signal #js [3 7 11])
         [x set-x] (sc/create-signal 11)]
     ($ :div
-      ($ For {:each nums}
+      ($js For {:each nums}
         (fn [num]
-          ($ :button {:onClick #(set-x num)} num)))
-      ($ Switch {:fallback ($ :p x " is between 5 and 10")}
-        ($ Match {:when #(> (x) 10)}
-          ($ :p x " is greater than 10"))
-        ($ Match {:when #(> 5 (x))}
-          ($ :p x " is less than 5"))))))
+          ($ :button {:on-click #(set-x num)} num)))
+      ($js Switch {:fallback ($ :p x " is between 5 and 10")}
+        ($js Match {:when #(> (x) 10)}
+          ($ :p (x) " is greater than 10"))
+        ($js Match {:when #(> 5 (x))}
+          ($ :p (x) " is less than 5"))))))
 
 (defc red-thing []
   ($ :strong {:style "color: red"} "Red Thing"))
@@ -91,21 +91,21 @@
   (let [[selected set-selected] (sc/create-signal "red")]
     ($ :<>
       ($ :select {:value selected
-                  :onInput (fn [^js e] (set-selected (.-currentTarget.value e)))}
-        ($ For {:each (to-array (keys options))}
+                  :on-input (fn [^js e] (set-selected (.-currentTarget.value e)))}
+        ($js For {:each (to-array (keys options))}
           (fn [color]
             ($ :option {:value color} color))))
        ;; Dynamic does not seem to work when backed with hyperscript
-      #_($ Dynamic {:component (fn [] (options (selected)))})
-      ($ Switch {:fallback ($ blue-thing)}
-        ($ Match {:when #(= (selected) "red")} ($ red-thing))
-        ($ Match {:when #(= (selected) "green")} ($ green-thing))))))
+      #_($js Dynamic {:component (fn [] (options (selected)))})
+      ($js Switch {:fallback ($ blue-thing)}
+        ($js Match {:when #(= (selected) "red")} ($ red-thing))
+        ($js Match {:when #(= (selected) "green")} ($ green-thing))))))
 
 ;; TODO
 (defc control-flow-portal []
   #_($ :div {:class "app-container"}
       ($ :p "Just some text inside a div that has a restricted size.")
-      ($ Portal
+      ($js Portal
         (fn []
           ($ :div {:class "popup"}
             ($ :h1 "Popup")
@@ -118,8 +118,9 @@
 (defc control-flow-error-boundary []
   ($ :<>
     ($ :div "Before")
-    ($ ErrorBoundary {:fallback (fn [err] err)}
-      (fn [] ($ broken)))
+    ($js ErrorBoundary {:fallback (fn [err] err)}
+      ;; No extra function wrapping here needed, because of automatic fn wrapping of expressions
+      ($ broken))
     ($ :div "After")))
 
 (defc lifecycles-on-mount []
@@ -131,21 +132,21 @@
     ($ :<>
       ($ :h1 "Photo Album")
       ($ :div {:class "photos" :style "display: flex"}
-        ($ For {:each photos :fallback ($ :p "Loading...")}
+        ($js For {:each photos :fallback ($ :p "Loading...")}
           (fn [^js photo]
             ($ :figure
               ($ :img {:src (.-thumbnailUrl photo) :alt (.-title photo)})
               ($ :figcaption (.-title photo)))))))))
 
 (defc lifecycles-on-cleanup []
-  ($ CountingComponent))
+  ($js CountingComponent))
 
 (defc bindings-events []
   (let [[pos set-pos] (sc/create-signal {:x 0 :y 0})
         handle-mouse-move (fn [event]
                             (set-pos {:x (.-clientX event)
                                       :y (.-clientY event)}))]
-    ($ :div {:onMouseMove handle-mouse-move
+    ($ :div {:on-mousemove handle-mouse-move
              :style #js {:width "100%"
                          :height "200px"
                          :background "#eee"}}
@@ -166,13 +167,13 @@
     ($ :<>
       ($ :style ".selected { background-color: #ff3e00; color: white; }")
       ($ :button {:classList (fn [] #js {:selected (= (current) "foo")})
-                  :onClick #(set-current "foo")}
+                  :on-click #(set-current "foo")}
         "foo")
       ($ :button {:classList (fn [] #js {:selected (= (current) "bar")})
-                  :onClick #(set-current "bar")}
+                  :on-click #(set-current "bar")}
         "bar")
       ($ :button {:classList (fn [] #js {:selected (= (current) "baz")})
-                  :onClick #(set-current "baz")}
+                  :on-click #(set-current "baz")}
         "baz"))))
 
 (defn use-canvas-animation [canvas]
@@ -219,17 +220,23 @@
       ($ canvas {:ref (fn [el] (reset! !canvas el))}))))
 
 (def pkg
-  #js {:name "solid-js"
-       :version 1
-       :speed "⚡️"
-       :website "https://solidjs.com"})
+  {:name "solid-js"
+   :version 1
+   :speed "⚡️"
+   :website "https://solidjs.com"})
 
-(defc info [^js props]
+(defc info [{:keys [name speed version website] :as props}]
   ($ :p
-    "The " ($ :code (.-name props)) " package is " (.-speed props) " fast. "
-    "Download version " (.-version props) " from "
-    ($ :a {:href (str "https://www.npmjs.com/package/" (.-name props))} "npm") " and "
-    ($ :a {:href (.-website props)} "learn more here")))
+    "The " ($ :code name) " package is " speed " fast. "
+    "Download version " version " from "
+    ($ :a {:href (str "https://www.npmjs.com/package/" name)} "npm") " and "
+    ($ :a {:href website} "learn more here"))
+  ;; TODO: make reactivity wrapping work for non-literal maps
+  #_($ :p
+      "The " ($ :code @name) " package is " @speed " fast. "
+      "Download version " @version " from "
+      ($ :a {:href (str "https://www.npmjs.com/package/" @name)} "npm") " and "
+      ($ :a {:href @website} "learn more here")))
 
 (defc bindings-spreads []
   ($ info pkg))
@@ -250,17 +257,17 @@
                     border: 1px solid #444;
                     box-shadow: 4px 4px #88888866;
                   }")
-      ($ Show {:when show
-               :fallback ($ :button {:onClick #(set-show true)} "Open Modal")}
+      ($js Show {:when show
+                 :fallback ($ :button {:on-click #(set-show true)} "Open Modal")}
         ($ :div {:class "modal"
                  :ref (fn [el] (use-click-outside el #(set-show false)))}
           "Some Modal")))))
 
-;; TODO figure out how to do destructuring
-(defc greeting [^js props]
+(defc greeting [{:keys [greeting name]}]
+  ;; mergeProps pattern is likely not needed if we have reactive maps as props
   #_(let [merged (mergeProps #js {:greeting "Hi" :name "John"} props)]
       ($ :h3 (.-greeting merged) " " (.-name merged)))
-  ($ :h3 #(or (.-greeting props) "Hi") " " #(or (.-name props) "John")))
+  ($ :h3 (or @greeting "Hi") " " (or @name "John")))
 
 (defc props-default-props []
   (let [[name set-name] (sc/create-signal)]
@@ -268,7 +275,7 @@
       ($ greeting {:greeting "Hello"})
       ($ greeting {:name "Jeremy"})
       ($ greeting {:name name})
-      ($ :button {:onClick #(set-name "Jarod")}
+      ($ :button {:on-click #(set-name "Jarod")}
         "Set Name"))))
 
 ;; TODO
@@ -304,12 +311,12 @@
       ($ :div
         ($ :input {:ref #(reset! !input %)})
         ($ :button
-          {:onClick (fn [_e]
-                      (when-not (str/blank? (.. @!input -value))
-                        (add-todo (.. @!input -value))
-                        (set! (.. @!input -value) "")))}
+          {:on-click (fn [_e]
+                       (when-not (str/blank? (.. @!input -value))
+                         (add-todo (.. @!input -value))
+                         (set! (.. @!input -value) "")))}
           "Add Todo"))
-      ($ For {:each #(.. store -todos)}
+      ($js For {:each #(.. store -todos)}
         (fn [todo]
           (js/console.log "Creating " (.. todo -text))
           ($ :div
