@@ -27,6 +27,9 @@
   :watch
   {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "demo" "test"]}
 
+  :watch-all
+  {:main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "demo" "test" "todomvc"]}
+
   :watch-test
   {:extra-paths ["test"]
    :main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "test"]}

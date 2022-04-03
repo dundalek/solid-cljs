@@ -1,7 +1,8 @@
 (ns solid.alpha.hyper
   (:require
    ["solid-js/h" :as hyperscript]
-   [goog.object :as gobj])
+   [goog.object :as gobj]
+   solid.alpha.core)
   (:require-macros [solid.alpha.hyper]))
 
 #_(def proxy-props-handler

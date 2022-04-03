@@ -225,21 +225,25 @@
    :speed "⚡️"
    :website "https://solidjs.com"})
 
-(defc info [{:keys [name speed version website] :as props}]
+(defc info-static [{:keys [name speed version website] :as props}]
   ($ :p
     "The " ($ :code name) " package is " speed " fast. "
     "Download version " version " from "
     ($ :a {:href (str "https://www.npmjs.com/package/" name)} "npm") " and "
-    ($ :a {:href website} "learn more here"))
-  ;; TODO: make reactivity wrapping work for non-literal maps
-  #_($ :p
-      "The " ($ :code @name) " package is " @speed " fast. "
-      "Download version " @version " from "
-      ($ :a {:href (str "https://www.npmjs.com/package/" @name)} "npm") " and "
-      ($ :a {:href @website} "learn more here")))
+    ($ :a {:href website} "learn more here")))
+
+(defc info [{:keys [name speed version website] :as props}]
+  ($ :p
+    "The " ($ :code @name) " package is " @speed " fast. "
+    "Download version " @version " from "
+    ($ :a {:href (str "https://www.npmjs.com/package/" @name)} "npm") " and "
+    ($ :a {:href @website} "learn more here")))
 
 (defc bindings-spreads []
-  ($ info pkg))
+  ($ :<>
+    ($ info-static pkg)
+    ;; TODO: make reactivity wrapping work for non-literal maps by default?
+    ($ info (sc/make-rprops pkg))))
 
 (defn use-click-outside [el accessor]
   (let [on-click (fn [e]
