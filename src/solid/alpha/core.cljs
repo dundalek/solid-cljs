@@ -10,6 +10,7 @@
 (def create-effect solid/createEffect)
 (def on-cleanup solid/onCleanup)
 (def on-mount solid/onMount)
+(def create-component solid/createComponent)
 
 (def For solid/For)
 (def Show solid/Show)

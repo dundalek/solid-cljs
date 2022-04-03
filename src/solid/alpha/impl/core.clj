@@ -40,26 +40,32 @@
       body)))
 
 (defn flow-for [[item items fallback-kw fallback] & body]
-  `(solid.alpha.core/$js solid.alpha.core/For (cljs.core/js-obj "each" ~items
-                                                                ~@(when (= fallback-kw :fallback)
-                                                                    ["fallback" fallback]))
-
-     (fn [~item]
-       ~@body)))
+  `(solid.alpha.core/create-component
+    solid.alpha.core/For
+    (cljs.core/js-obj "each" ~items
+                      ~@(when (= fallback-kw :fallback)
+                          ["fallback" fallback])
+                      "children" (fn [~item]
+                                   (cljs.core/array ~@body)))))
 
 (defn flow-if
   ([test then]
-   `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test)
-      (fn []
-        ~then)))
+   `(solid.alpha.core/create-component
+     solid.alpha.core/Show
+     (cljs.core/js-obj "when" ~test
+                       "children" (fn []
+                                    ~then))))
   ([test then else]
-   `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test
-                                                                  "fallback" ~else)
-
-      (fn []
-        ~then))))
+   `(solid.alpha.core/create-component
+     solid.alpha.core/Show
+     (cljs.core/js-obj "when" ~test
+                       "fallback" ~else
+                       "children" (fn []
+                                    ~then)))))
 
 (defn flow-when [test & body]
-  `(solid.alpha.core/$js solid.alpha.core/Show (cljs.core/js-obj "when" ~test)
-     (fn []
-       ~@body)))
+  `(solid.alpha.core/create-component
+    solid.alpha.core/Show
+    (cljs.core/js-obj "when" ~test
+                      "children" (fn []
+                                   (cljs.core/array ~@body)))))
